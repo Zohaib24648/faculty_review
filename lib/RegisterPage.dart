@@ -1,7 +1,8 @@
 import 'package:faculty_review/LoginPage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'constants.dart';
+import 'main.dart';
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -41,25 +42,9 @@ class _RegisterPageState extends State<RegisterPage> {
         .width;
     final maxWidth = deviceWidth > 600 ? 600.0 : deviceWidth *
         0.95; // Define a maximum width for the content
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Center(
-          child: Text(
-            'Faculty Reviews',
-            style: TextStyle(
-              color: const Color(0xff700f1a),
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-              fontFamily: GoogleFonts
-                  .spaceMono()
-                  .fontFamily,
-            ),
-          ),
-        ),
-      ),
+
+      appBar:  Constants.constantAppBar,
       body: Column(
         children: [
           Expanded(

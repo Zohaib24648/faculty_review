@@ -1,4 +1,8 @@
+import 'package:faculty_review/TeacherPage.dart';
 import 'package:flutter/material.dart';
+import 'mongodbconnection.dart';
+import 'TeacherPage.dart';
+import 'constants.dart';
 class SearchTeachers extends StatefulWidget {
   const SearchTeachers({super.key});
 
@@ -9,7 +13,7 @@ class SearchTeachers extends StatefulWidget {
 class _SearchTeachersState extends State<SearchTeachers> {
   @override
   Widget build(BuildContext context) {
-    return  DefaultTabController(
+    return DefaultTabController(
       initialIndex: 1,
       length: 3,
       child: Scaffold(
@@ -19,82 +23,163 @@ class _SearchTeachersState extends State<SearchTeachers> {
             child: Text(
               'Faculty Reviews',
               style: TextStyle(
-                color: Color(0xff700f1a),
+                color: brownColor,
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
                 fontFamily: 'Space Mono',
               ),
             ),
-
           ),
+          // leading:  IconButton(icon:Icon(Icons.menu), color: brownColor, onPressed: () { MenuItemButton },),
           bottom: const TabBar(
             tabs: [
-              Tab(icon: Icon(Icons.person,color: Color(0xff700f1a),), text: 'Teachers',),
-              Tab(icon: Icon(Icons.book,color: Color(0xff700f1a),), text: 'Courses',),
-              Tab(icon: Icon(Icons.school,color: Color(0xff700f1a)), text: 'Major',),
+              Tab(icon: Icon(Icons.person, color: brownColor)),
+              Tab(icon: Icon(Icons.book, color: brownColor)),
+              Tab(icon: Icon(Icons.school, color:brownColor)),
             ],
-          )
-
+          ),
         ),
-        body:  TabBarView(
+        body: TabBarView(
           children: [
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  // for  (var teacher in teacherslist)
-                  // {}
-                  Card(
-                    child: ListTile(
-                      title: Text('Teacher 1'),
-                      trailing: Text('Courses: 5'),
-                      subtitle: Text('Rating: 4.5'),
-                      leading: CircleAvatar(
-                        //   backgroundImage: AssetImage('assets/images/teacher1.jpg'),
-                      ),
+            FutureBuilder<List<dynamic>>(
+              future: mongodbconnection().allteacher(), // Call allteacher() method and await the result
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator(); // Show a loading indicator while data is being fetched
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}'); // Show an error message if data retrieval fails
+                } else {
+                  // Map over the result and create a list of TeacherCard widgets
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: (snapshot.data ?? []).map((teacher) {
+                        return TeacherCard(
+                          name: teacher['name'],
+                          courses: teacher['courses'],
+                          rating: teacher['rating'],
+                        );
+                      }).toList(),
                     ),
+                  );
+                }
+              },
+            ),
+            FutureBuilder <List<dynamic>>(future:mongodbconnection().allcourses() , builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                return SingleChildScrollView(
+                  child: Column(
+                    children: (snapshot.data ?? []).map((course) {
+                      return CourseCard(
+                        name: course['name'],
+                        major: course['major'], rating: course['rating'],
+                      );
+                    }).toList(),
                   ),
-                  ]),
+                );
+              }
+            },
             ),
-            Center(
-              child: Text('Courses'),
-            ),
-            Center(
-              child: Text('Major'),
+            FutureBuilder <List<dynamic>>(future:mongodbconnection().allMajors() , builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                return SingleChildScrollView(
+                  child: Column(
+                    children: (snapshot.data ?? []).map((course) {
+                      return MajorCard(
+                        major: course['major'],
+                      );
+                    }).toList(),
+                  ),
+                );
+              }
+            },
             ),
           ],
         ),
-      ),
+        ),
     );
-}}
-
-class TeacherCard {
-  TeacherCard({required this.name, required this.courses, required this.rating});
-
-  final String name;
-  final int courses;
-  final double rating;
+  }
 }
 
-final List<dynamic> teacherslist = [
-  {"name": "Teacher 1", "courses": 5, "rating": 4.5},
-  {"name": "Teacher 2", "courses": 4, "rating": 4.8},
-  {"name": "Teacher 3", "courses": 3, "rating": 4.2},
-  {"name": "Teacher 4", "courses": 5, "rating": 4.9},
-  {"name": "Teacher 5", "courses": 2, "rating": 4.0},
-  {"name": "Teacher 6", "courses": 3, "rating": 4.3},
-  {"name": "Teacher 7", "courses": 4, "rating": 4.6},
-  {"name": "Teacher 8", "courses": 5, "rating": 4.7},
-  {"name": "Teacher 9", "courses": 2, "rating": 4.1},
-  {"name": "Teacher 10", "courses": 4, "rating": 4.5},
-  {"name": "Teacher 11", "courses": 5, "rating": 4.8},
-  {"name": "Teacher 12", "courses": 3, "rating": 4.0},
-  {"name": "Teacher 13", "courses": 5, "rating": 4.9},
-  {"name": "Teacher 14", "courses": 2, "rating": 4.2},
-  {"name": "Teacher 15", "courses": 3, "rating": 4.4},
-  {"name": "Teacher 16", "courses": 4, "rating": 4.6},
-  {"name": "Teacher 17", "courses": 5, "rating": 4.7},
-  {"name": "Teacher 18", "courses": 2, "rating": 3.9},
-  {"name": "Teacher 19", "courses": 4, "rating": 4.5},
-  {"name": "Teacher 20", "courses": 3, "rating": 4.3},
-];
+class TeacherCard extends StatelessWidget {
+  final String name;
+  final dynamic courses;
+  final dynamic rating;
+
+  const TeacherCard({
+    required this.name,
+    required this.courses,
+    required this.rating,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>TeacherPage(teachername: name)));},
+        title: Text(name),
+        subtitle: Text('Courses: $courses, Rating: $rating'),
+      leading: const Icon(Icons.person, color: Color(0xff700f1a), size:40,),
+      ),
+      
+    );
+  }
+}
+
+class CourseCard extends StatelessWidget {
+  final String name;
+  final dynamic major;
+  final dynamic rating;
+
+  const CourseCard({
+    required this.name,
+    required this.major,
+    required this.rating,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        title: Text(name),
+        subtitle: Text('Courses: $major, Rating: $rating'),
+        leading: const Icon(Icons.person, color: Color(0xff700f1a), size:40,),
+      ),
+    );
+  }
+}
+
+
+
+class MajorCard extends StatelessWidget {
+  final dynamic major;
+  const MajorCard({
+    required this.major,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        title: Text(major),
+        leading: const Icon(Icons.person, color: Color(0xff700f1a), size:40,),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(const MaterialApp(
+    home: SearchTeachers(),
+  ));
+}

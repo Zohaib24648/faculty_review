@@ -1,16 +1,19 @@
-import 'package:faculty_review/HomePage.dart';
 import 'package:flutter/material.dart';
-import './LoginPage.dart';
 import './RegisterPage.dart';
-import 'SearchCourses.dart';
-import 'SearchTeachers.dart';
+import 'mongodbconnection.dart';
 
-void main() {
+
+
+void main() async {
+
   runApp(const MyApp());
+
+  mongodbconnection().main();
+
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +22,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const SearchTeachers(),
+      home:  const RegisterPage(),
     );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }

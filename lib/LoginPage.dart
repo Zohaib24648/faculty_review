@@ -1,9 +1,11 @@
 
+import 'package:faculty_review/SearchTeachers.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'RegisterPage.dart';
+import 'constants.dart';
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -21,24 +23,10 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final deviceWidth = MediaQuery.of(context).size.width;
-    final maxWidth = deviceWidth > 600 ? 600.0 : deviceWidth * 0.95; // Define a maximum width for the content
+    final maxWidth = deviceWidth > 600 ? 600.0 : deviceWidth * 0.95;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Center(
-          child: Text(
-            'Faculty Reviews',
-            style: TextStyle(
-              color: const Color(0xff700f1a),
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-              fontFamily: GoogleFonts.spaceMono().fontFamily,
-            ),
-          ),
-        ),
-      ),
+      appBar: Constants.constantAppBar,
       body: Column(
         children: [
           Expanded(
@@ -70,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
                           decoration: const InputDecoration(
                             hintText: "Erp or Email",
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xff700f1a), width: 5,),
+                              borderSide: BorderSide(color: brownColor, width: 5,),
                               borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                           ),
@@ -100,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                           decoration: InputDecoration(
                             hintText: "Enter your Password",
                             focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xff700f1a), width: 5,),
+                              borderSide: BorderSide(color: brownColor, width: 5,),
                               borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                             suffixIcon: IconButton(
@@ -124,7 +112,12 @@ class _LoginPageState extends State<LoginPage> {
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const SearchTeachers()),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xff700f1a),
                                 padding: const EdgeInsets.all(10),
