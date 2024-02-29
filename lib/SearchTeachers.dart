@@ -43,10 +43,14 @@ class _SearchTeachersState extends State<SearchTeachers> {
         body: TabBarView(
           children: [
             FutureBuilder<List<dynamic>>(
-              future: mongodbconnection().allteacher(), // Call allteacher() method and await the result
+              future: MongodbConnection().allTeacher(), // Call allteacher() method and await the result
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator(); // Show a loading indicator while data is being fetched
+                  return const Center(
+                    child: CircularProgressIndicator.adaptive(
+                      strokeWidth: 2, // Adjust the stroke width as needed
+                    ),
+                  );
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}'); // Show an error message if data retrieval fails
                 } else {
@@ -65,10 +69,14 @@ class _SearchTeachersState extends State<SearchTeachers> {
                 }
               },
             ),
-            FutureBuilder <List<dynamic>>(future:mongodbconnection().allcourses() , builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
+            FutureBuilder <List<dynamic>>(future:MongodbConnection().allCourses() , builder: (context, snapshot) {
+              if ((snapshot.connectionState == ConnectionState.waiting)) {
+                 return  const Center(
+                   child: CircularProgressIndicator(
+                     strokeWidth: 2, // Adjust the stroke width as needed
+                   ),
+                 );
+              }    else if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               } else {
                 return SingleChildScrollView(
@@ -84,9 +92,14 @@ class _SearchTeachersState extends State<SearchTeachers> {
               }
             },
             ),
-            FutureBuilder <List<dynamic>>(future:mongodbconnection().allMajors() , builder: (context, snapshot) {
+            FutureBuilder <List<dynamic>>(future:MongodbConnection().allMajors() , builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
+                return const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2, // Adjust the stroke width as needed
+                  ),
+                );
+
               } else if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               } else {

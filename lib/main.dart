@@ -1,3 +1,4 @@
+import 'package:faculty_review/SearchTeachers.dart';
 import 'package:flutter/material.dart';
 import './RegisterPage.dart';
 import 'mongodbconnection.dart';
@@ -8,7 +9,7 @@ void main() async {
 
   runApp(const MyApp());
 
-  mongodbconnection().main();
+  MongodbConnection.getDb();
 
 }
 
