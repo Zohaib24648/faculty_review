@@ -32,6 +32,20 @@ class MongodbConnection {
     }
   }
 
+
+  Future<List> Teachers() async {
+    var db = await getDb(); // Use the singleton Db instance
+    try {
+      List<dynamic> data = await db.collection('Teachers').find().toList();
+      return data;
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+
+
+
   Future<List> allMajors() async {
     var db = await getDb(); // Use the singleton Db instance
     try {

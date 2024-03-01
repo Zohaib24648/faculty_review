@@ -1,8 +1,12 @@
 import 'package:faculty_review/TeacherPage.dart';
 import 'package:flutter/material.dart';
 import 'mongodbconnection.dart';
+import 'dart:convert';
 import 'TeacherPage.dart';
 import 'constants.dart';
+import 'dart:typed_data';
+
+
 class SearchTeachers extends StatefulWidget {
   const SearchTeachers({super.key});
 
@@ -43,32 +47,46 @@ class _SearchTeachersState extends State<SearchTeachers> {
         body: TabBarView(
           children: [
             FutureBuilder<List<dynamic>>(
-              future: MongodbConnection().allTeacher(), // Call allteacher() method and await the result
+              future: MongodbConnection().Teachers(), // Call allTeacher() method and await the result
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator.adaptive(
-                      strokeWidth: 2, // Adjust the stroke width as needed
-                    ),
+                    child: CircularProgressIndicator.adaptive(),
                   );
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}'); // Show an error message if data retrieval fails
                 } else {
-                  // Map over the result and create a list of TeacherCard widgets
-                  return SingleChildScrollView(
-                    child: Column(
-                      children: (snapshot.data ?? []).map((teacher) {
-                        return TeacherCard(
-                          name: teacher['name'],
-                          courses: teacher['courses'],
-                          rating: teacher['rating'],
-                        );
-                      }).toList(),
-                    ),
+                  // Use CustomScrollView with SliverGrid
+                  return CustomScrollView(
+                    slivers: <Widget>[
+                      SliverPadding(
+                        padding: const EdgeInsets.all(10),
+                        sliver: SliverGrid(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // Number of items per row
+                            crossAxisSpacing: 10, // Horizontal space between items
+                            mainAxisSpacing: 10, // Vertical space between items
+                            childAspectRatio: 2 / 3, // Aspect ratio of the cards
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                                (BuildContext context, int index) {
+                              var teacher = snapshot.data![index];
+                              return TeacherCard(
+                                name: teacher['Name'],
+                                courses: teacher['Courses Taught'],
+                                base64Image: teacher['ImageFile'],
+                              );
+                            },
+                            childCount: snapshot.data?.length ?? 0, // Number of items in the grid
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 }
               },
             ),
+
             FutureBuilder <List<dynamic>>(future:MongodbConnection().allCourses() , builder: (context, snapshot) {
               if ((snapshot.connectionState == ConnectionState.waiting)) {
                  return  const Center(
@@ -125,27 +143,45 @@ class _SearchTeachersState extends State<SearchTeachers> {
 class TeacherCard extends StatelessWidget {
   final String name;
   final dynamic courses;
-  final dynamic rating;
+  final String base64Image; // Add this line
 
   const TeacherCard({
     required this.name,
     required this.courses,
-    required this.rating,
+    required this.base64Image, // Add this line
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>TeacherPage(teachername: name)));},
-        title: Text(name),
-        subtitle: Text('Courses: $courses, Rating: $rating'),
-      leading: const Icon(Icons.person, color: Color(0xff700f1a), size:40,),
+    Uint8List bytes = base64Decode(base64Image); // Decode the Base64 string
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TeacherPage(teachername: name, courses: courses, base64Image: base64Image),
+          ),
+        );
+      },
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: <Widget>[
+            Image.memory(bytes, fit: BoxFit.cover), // Display the image
+            Text(name),
+            // You can add more widgets here to display other details
+          ],
+        ),
       ),
-      
     );
   }
 }
+
 
 class CourseCard extends StatelessWidget {
   final String name;

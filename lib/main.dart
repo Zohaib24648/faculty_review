@@ -6,10 +6,9 @@ import 'mongodbconnection.dart';
 
 
 void main() async {
-
-  runApp(const MyApp());
-
   MongodbConnection.getDb();
+runApp(const MyApp());
+
 
 }
 
@@ -25,14 +24,5 @@ class MyApp extends StatelessWidget {
       ),
       home:  const RegisterPage(),
     );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
