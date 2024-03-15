@@ -44,6 +44,20 @@ class MongodbConnection {
     }
   }
 
+  Future<Map<String, dynamic>?> FindTeacher(String email) async {
+    print(email); // For debugging, consider removing later
+    var db = await getDb();
+    try {
+      var data = await db.collection('Teachers').findOne({"Email": email});
+      print(data); // For debugging, consider removing later
+      return data;
+    } catch (e) {
+      print(e); // Consider how to handle errors more gracefully
+      return null; // Indicate an error occurred
+    }
+  }
+
+
 
 
   Future<List> allMajors() async {

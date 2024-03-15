@@ -2,7 +2,6 @@ import 'package:faculty_review/TeacherPage.dart';
 import 'package:flutter/material.dart';
 import 'mongodbconnection.dart';
 import 'dart:convert';
-import 'TeacherPage.dart';
 import 'constants.dart';
 import 'dart:typed_data';
 
@@ -73,8 +72,9 @@ class _SearchTeachersState extends State<SearchTeachers> {
                               var teacher = snapshot.data![index];
                               return TeacherCard(
                                 name: teacher['Name'],
-                                courses: teacher['Courses Taught'],
+                                title: teacher['Title'],
                                 base64Image: teacher['ImageFile'],
+                                email: teacher['Email'],
                               );
                             },
                             childCount: snapshot.data?.length ?? 0, // Number of items in the grid
@@ -141,47 +141,69 @@ class _SearchTeachersState extends State<SearchTeachers> {
 }
 
 class TeacherCard extends StatelessWidget {
+  final String base64Image;
+  final String email;
   final String name;
-  final dynamic courses;
-  final String base64Image; // Add this line
+  final String title;
 
   const TeacherCard({
+    required this.base64Image,
+    required this.email,
     required this.name,
-    required this.courses,
-    required this.base64Image, // Add this line
-    super.key,
-  });
+    required this.title,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Uint8List bytes = base64Decode(base64Image); // Decode the Base64 string
+    Uint8List bytes;
+    try {
+      bytes = base64Decode(base64Image);
+    } catch (e) {
+      // Handle error or use a placeholder image if decoding fails
+      bytes = Uint8List(0); // Placeholder for an empty image
+    }
 
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TeacherPage(teachername: name, courses: courses, base64Image: base64Image),
-          ),
-        );
+      onTap: () async {
+        // Fetch the detailed information based on the teacher's email
+        var teacherDetail = await MongodbConnection().FindTeacher(email);
+        // Debug print, consider removing for production
+        print(teacherDetail);
+        if (teacherDetail != null) {
+          // Use the fetched teacherDetail to navigate to the TeacherPage
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TeacherPage(teacherId: email), // Assuming email is used as a unique identifier for navigation
+            ),
+          );
+        } else {
+          // Handle the case where teacherDetail is null (e.g., show a message)
+          const Center(
+            child: Text('Error fetching teacher details or not found'),
+          );
+        }
       },
       child: Card(
-        clipBehavior: Clip.antiAlias,
+
+        // clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
+        elevation: 4,
         child: Column(
+          // mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Image.memory(bytes, fit: BoxFit.cover), // Display the image
-            Text(name),
-            // You can add more widgets here to display other details
+            if (bytes.isNotEmpty) Image.memory(bytes, fit: BoxFit.cover,), // Show image only if bytes are not empty
+            Text(name, style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(title),
           ],
         ),
       ),
     );
   }
 }
-
 
 class CourseCard extends StatelessWidget {
   final String name;
