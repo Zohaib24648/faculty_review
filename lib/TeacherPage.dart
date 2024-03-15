@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'constants.dart';
-import 'package:comment_tree/comment_tree.dart';
-
 import 'mongodbconnection.dart';
 
 class TeacherPage extends StatefulWidget {
@@ -19,9 +17,13 @@ class TeacherPage extends StatefulWidget {
 }
 
 class _TeacherPageState extends State<TeacherPage> {
+  final _formKey = GlobalKey<FormState>();
+  String _review = '';
+
   Future<Map<String, dynamic>?> fetchTeacherDetails() async {
     // Replace with your actual database fetch method
     var teacherDetail = await MongodbConnection().FindTeacher(widget.teacherId);
+
     return teacherDetail; // Ensure this is your actual fetched data
   }
 
@@ -61,7 +63,7 @@ class _TeacherPageState extends State<TeacherPage> {
                           Expanded(
                             child: Container(
                                 child: Image.memory(bytes, fit: BoxFit.cover),
-                                padding: EdgeInsets.fromLTRB(0, 10, 10, 10)),
+                                padding: const EdgeInsets.fromLTRB(0, 10, 10, 10)),
                             flex: 3,
                           ),
                         Expanded(
@@ -91,12 +93,10 @@ class _TeacherPageState extends State<TeacherPage> {
                     ),
                     // Text("Overview: ${teacherDetails['Overview']}"),
                     // Text("Courses Taught: ${teacherDetails['Courses Taught']}"),
+                    // Wrap TextFormField with Form and assign _formKey
                     Container(
-                      constraints: const BoxConstraints(
-                        maxHeight: 70,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                      child: Form(
+                        key: _formKey, // This is crucial
                         child: TextFormField(
                           style: const TextStyle(
                             color: Colors.black,
@@ -104,24 +104,73 @@ class _TeacherPageState extends State<TeacherPage> {
                             fontWeight: FontWeight.bold,
                           ),
                           decoration: const InputDecoration(
-                              hintText: "Post a Review",
-                              hintStyle: TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: brownColor, width: 2),
-//    borderRadius: BorderRadius.all(Radius.circular(10))
-                              ),
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide(
+                            hintText: "Post a Review",
+                            hintStyle: TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: brownColor, width: 2),
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
                                 color: Color.fromARGB(0, 0, 0, 0),
-                              ))),
+                              ),
+                            ),
+                          ),
+                          onSaved: (value) {
+                            _review = value ?? ''; // Save the review text
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a review';
+                            }
+                            return null; // Indicates validation passed
+                          },
                         ),
                       ),
                     ),
+
+                    TextButton(
+                      onPressed: () {
+                        if (_formKey.currentState?.validate()??false) {
+                          // If the form is valid, save the form state
+                          _formKey.currentState?.save();
+
+                          // Here you can call your method to post the review to the database
+                          MongodbConnection()
+                              .postReview(widget.teacherId, _review)
+                              .then((result) {
+                            if (result) {
+                              // Show a success message or update the UI accordingly
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Review posted successfully')));
+                            } else {
+                              // Handle the error scenario
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Failed to post review')));
+                            }
+                          });
+                        }
+                      },
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(brownColor),
+                      ),
+                      child: const Text(
+                        "Post Review",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
                     const Card(
                         // isexpanded for keeping track of if the subtitle is expanded or not
                         child: ListTile(
@@ -144,8 +193,8 @@ class _TeacherPageState extends State<TeacherPage> {
                                         color: brownColor),
                                     Padding(
                                       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                      child: Icon(Icons.reply,
-                                          color: brownColor),
+                                      child:
+                                          Icon(Icons.reply, color: brownColor),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -163,40 +212,39 @@ class _TeacherPageState extends State<TeacherPage> {
                                   ],
                                 ),
                               ],
-                            )
-                        )
-
-                    ),
+                            ))),
                     Row(
                       children: [
-                        TextButton(onPressed: () {
-                          print("Replied");
-
-                        }, child:
-                        Text("Reply")),
-
-                        TextButton(onPressed: () {
-                          print("Upvoted");
-                        }, child: Text("Upvote")),
-
-                        TextButton(onPressed: () {
-                          print("Downvoted");
-                        }, child: Text("Downvote"))
-
+                        TextButton(
+                            onPressed: () {
+                              print("Replied");
+                            },
+                            child: const Text("Reply")),
+                        TextButton(
+                            onPressed: () {
+                              print("Upvoted");
+                            },
+                            child: const Text("Upvote")),
+                        TextButton(
+                            onPressed: () {
+                              print("Downvoted");
+                            },
+                            child: const Text("Downvote"))
                       ],
                     ),
 
                     const Padding(
-                      padding: EdgeInsets.fromLTRB(40,0,0,0),
+                      padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
                       child: Card(
-                        // isexpanded for keeping track of if the subtitle is expanded or not
+                          // isexpanded for keeping track of if the subtitle is expanded or not
                           child: ListTile(
                               title: Row(
                                 children: [
-                                  Icon(Icons.person, color: brownColor, size: 40),
+                                  Icon(Icons.person,
+                                      color: brownColor, size: 40),
                                   Text('John Doe',
-                                      style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
                                 ],
                               ),
                               subtitle: Column(
@@ -209,68 +257,65 @@ class _TeacherPageState extends State<TeacherPage> {
                                       Icon(Icons.more_vert_outlined,
                                           color: brownColor),
                                       Padding(
-                                        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                        padding:
+                                            EdgeInsets.fromLTRB(10, 0, 0, 0),
                                         child: Icon(Icons.reply,
                                             color: brownColor),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 0, 0, 0),
                                         child: Icon(Icons.thumb_up,
                                             color: brownColor),
                                       ),
                                       Text(' 10'),
                                       Padding(
                                         padding:
-                                        EdgeInsets.fromLTRB(10.0, 0, 0, 0),
+                                            EdgeInsets.fromLTRB(10.0, 0, 0, 0),
                                         child: Icon(Icons.thumb_down,
                                             color: brownColor),
                                       ),
                                       Text(' 2'),
                                     ],
                                   ),
-
                                 ],
-
-                              )
-
-                          )
-                      ),
-
-
+                              ))),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(40,0,0,0),
+                      padding: const EdgeInsets.fromLTRB(40, 0, 0, 0),
                       child: Row(
                         children: [
-                          TextButton(onPressed: () {
-                            print("Replied");
-
-                          }, child:
-                          Text("Reply")),
-
-                          TextButton(onPressed: () {
-                            print("Upvoted");
-                          }, child: Text("Upvote")),
-
-                          TextButton(onPressed: () {
-                            print("Downvoted");
-                          }, child: Text("Downvote"))
-
+                          TextButton(
+                              onPressed: () {
+                                print("Replied");
+                              },
+                              child: const Text("Reply")),
+                          TextButton(
+                              onPressed: () {
+                                print("Upvoted");
+                              },
+                              child: const Text("Upvote")),
+                          TextButton(
+                              onPressed: () {
+                                print("Downvoted");
+                              },
+                              child: const Text("Downvote"))
                         ],
                       ),
                     ),
 
                     const Padding(
-                      padding: EdgeInsets.fromLTRB(80,0,0,0),
+                      padding: EdgeInsets.fromLTRB(80, 0, 0, 0),
                       child: Card(
-                        // isexpanded for keeping track of if the subtitle is expanded or not
+                          // isexpanded for keeping track of if the subtitle is expanded or not
                           child: ListTile(
                               title: Row(
                                 children: [
-                                  Icon(Icons.person, color: brownColor, size: 40),
+                                  Icon(Icons.person,
+                                      color: brownColor, size: 40),
                                   Text('John Doe',
-                                      style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
                                 ],
                               ),
                               subtitle: Column(
@@ -283,53 +328,49 @@ class _TeacherPageState extends State<TeacherPage> {
                                       Icon(Icons.more_vert_outlined,
                                           color: brownColor),
                                       Padding(
-                                        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                        padding:
+                                            EdgeInsets.fromLTRB(10, 0, 0, 0),
                                         child: Icon(Icons.reply,
                                             color: brownColor),
                                       ),
                                       Padding(
-                                        padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 0, 0, 0),
                                         child: Icon(Icons.thumb_up,
                                             color: brownColor),
                                       ),
                                       Text(' 10'),
                                       Padding(
                                         padding:
-                                        EdgeInsets.fromLTRB(10.0, 0, 0, 0),
+                                            EdgeInsets.fromLTRB(10.0, 0, 0, 0),
                                         child: Icon(Icons.thumb_down,
                                             color: brownColor),
                                       ),
                                       Text(' 2'),
                                     ],
                                   ),
-
                                 ],
-
-                              )
-
-                          )
-                      ),
-
-
+                              ))),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(80,0,0,0),
+                      padding: const EdgeInsets.fromLTRB(80, 0, 0, 0),
                       child: Row(
                         children: [
-                          TextButton(onPressed: () {
-                            print("Replied");
-
-                          }, child:
-                          Text("Reply")),
-
-                          TextButton(onPressed: () {
-                            print("Upvoted");
-                          }, child: Text("Upvote")),
-
-                          TextButton(onPressed: () {
-                            print("Downvoted");
-                          }, child: Text("Downvote"))
-
+                          TextButton(
+                              onPressed: () {
+                                print("Replied");
+                              },
+                              child: const Text("Reply")),
+                          TextButton(
+                              onPressed: () {
+                                print("Upvoted");
+                              },
+                              child: const Text("Upvote")),
+                          TextButton(
+                              onPressed: () {
+                                print("Downvoted");
+                              },
+                              child: const Text("Downvote"))
                         ],
                       ),
                     ),

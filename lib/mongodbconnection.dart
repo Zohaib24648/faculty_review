@@ -21,6 +21,17 @@ class MongodbConnection {
     return _db!;
   }
 
+  Future<bool> postReview(String teacherId, String review) async {
+    try {
+    print("Review Submitted. the material is $teacherId and the review is $review");
+      return true; // Return true on success
+    } catch (e) {
+      print(e); // Log the error
+      return false; // Return false on failure
+    }
+  }
+
+
   Future<List> allTeacher() async {
     var db = await getDb(); // Use the singleton Db instance
     try {
