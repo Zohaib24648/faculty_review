@@ -43,6 +43,35 @@ class MongodbConnection {
     }
   }
 
+  // Method to fetch replies for a specific parent comment
+  Future<List<Map<String, dynamic>>> fetchReplies(int parentId) async {
+    var db = await getDb(); // Use the singleton Db instance
+    try {
+      // Query the collection for comments with the specified Parent_id
+      var data = await db.collection('All_Reviews').find({'Parent_id': parentId}).toList();
+
+      print(data); // Debugging: Print fetched replies
+      return data;
+    } catch (e) {
+      print(e); // Error handling: Log the error
+      return []; // Return an empty list on failure
+    }
+  }
+
+
+  Future<List> allParentReviews() async {
+    var db = await getDb(); // Use the singleton Db instance
+    try {
+      List<dynamic> data = await db.collection('All_Reviews').find( {'Parent_id':null} ).toList();
+      print(data);
+      return data;
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+
+
 
   Future<List> Teachers() async {
     var db = await getDb(); // Use the singleton Db instance
@@ -91,5 +120,4 @@ class MongodbConnection {
       print(e);
       return [];
     }
-  }
-}
+  }}

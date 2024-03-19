@@ -1,386 +1,300 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'constants.dart';
 import 'mongodbconnection.dart';
+import 'constants.dart';
 
-class TeacherPage extends StatefulWidget {
+class TeacherPage extends StatelessWidget {
   final String teacherId;
 
   const TeacherPage({
     required this.teacherId,
-    super.key,
-  });
-
-  @override
-  _TeacherPageState createState() => _TeacherPageState();
-}
-
-class _TeacherPageState extends State<TeacherPage> {
-  final _formKey = GlobalKey<FormState>();
-  String _review = '';
+    Key? key,
+  }) : super(key: key);
 
   Future<Map<String, dynamic>?> fetchTeacherDetails() async {
-    // Replace with your actual database fetch method
-    var teacherDetail = await MongodbConnection().FindTeacher(widget.teacherId);
-
-    return teacherDetail; // Ensure this is your actual fetched data
+    var teacherDetail = await MongodbConnection().FindTeacher(teacherId);
+    return teacherDetail;
   }
 
   @override
   Widget build(BuildContext context) {
+    String _review = '';
+    int?
+        _parentId; // Set this to the Parent_id of the parent comment if it's a reply
+    final _formKey = GlobalKey<FormState>();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Teacher Details'), // Updated to a more generic text
+        title: const Text('Teacher Details'),
       ),
-      body: FutureBuilder<Map<String, dynamic>?>(
-        future: fetchTeacherDetails(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError || snapshot.data == null) {
-            // Combined check for errors or null data
-            return const Center(
-                child: Text('Error fetching teacher details or not found'));
-          } else {
-            var teacherDetails = snapshot.data!;
-            Uint8List bytes;
-            try {
-              bytes = base64Decode(teacherDetails['ImageFile']);
-            } catch (e) {
-              // Fallback for images that fail to decode
-              bytes = Uint8List(0);
-            }
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-//                  crossAxisAlignment: CrossAxisAlignment.center,
+      body: Stack(children: [
+        SingleChildScrollView(
+          child: FutureBuilder<Map<String, dynamic>?>(
+            future: fetchTeacherDetails(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError || snapshot.data == null) {
+                return const Center(
+                    child: Text('Error fetching teacher details or not found'));
+              } else {
+                var teacherDetails = snapshot.data!;
+                Uint8List bytes;
+                try {
+                  bytes = base64Decode(teacherDetails['ImageFile']);
+                } catch (e) {
+                  // Fallback for images that fail to decode
+                  bytes = Uint8List(0);
+                }
+
+                // Now fetching and displaying comments
+                return Column(
                   children: [
-                    Row(
+                    Column(
+                      //                  crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        if (bytes.isNotEmpty)
-                          Expanded(
-                            child: Container(
-                                child: Image.memory(bytes, fit: BoxFit.cover),
-                                padding: const EdgeInsets.fromLTRB(0, 10, 10, 10)),
-                            flex: 3,
-                          ),
-                        Expanded(
-                          flex: 4,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${teacherDetails['Name']}",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    color: brownColor),
+                        Row(
+                          children: [
+                            if (bytes.isNotEmpty)
+                              Expanded(
+                                flex: 3,
+                                child: Container(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        0, 10, 10, 10),
+                                    child:
+                                        Image.memory(bytes, fit: BoxFit.cover)),
                               ),
-                              Text("${teacherDetails['Title']}"),
-                              Text("Email ${teacherDetails['Email']}"),
-                              Text(
-                                  "Department: ${teacherDetails['Department']}"),
-                              Text(
-                                  "Specialization: ${teacherDetails['Specialization']}"),
-                              Text(
-                                  "Onboard Status: ${teacherDetails['Onboard Status']}"),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    // Text("Overview: ${teacherDetails['Overview']}"),
-                    // Text("Courses Taught: ${teacherDetails['Courses Taught']}"),
-                    // Wrap TextFormField with Form and assign _formKey
-                    Container(
-                      child: Form(
-                        key: _formKey, // This is crucial
-                        child: TextFormField(
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: "Post a Review",
-                            hintStyle: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: brownColor, width: 2),
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color.fromARGB(0, 0, 0, 0),
-                              ),
-                            ),
-                          ),
-                          onSaved: (value) {
-                            _review = value ?? ''; // Save the review text
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a review';
-                            }
-                            return null; // Indicates validation passed
-                          },
-                        ),
-                      ),
-                    ),
-
-                    TextButton(
-                      onPressed: () {
-                        if (_formKey.currentState?.validate()??false) {
-                          // If the form is valid, save the form state
-                          _formKey.currentState?.save();
-
-                          // Here you can call your method to post the review to the database
-                          MongodbConnection()
-                              .postReview(widget.teacherId, _review)
-                              .then((result) {
-                            if (result) {
-                              // Show a success message or update the UI accordingly
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content:
-                                          Text('Review posted successfully')));
-                            } else {
-                              // Handle the error scenario
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Failed to post review')));
-                            }
-                          });
-                        }
-                      },
-                      style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(brownColor),
-                      ),
-                      child: const Text(
-                        "Post Review",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const Card(
-                        // isexpanded for keeping track of if the subtitle is expanded or not
-                        child: ListTile(
-                            title: Row(
-                              children: [
-                                Icon(Icons.person, color: brownColor, size: 40),
-                                Text('John Doe',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            subtitle: Column(
-                              children: [
-                                Text(
-                                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean viverra ex a nisl porta, quis rhoncus neque vehicula. Sed gravida enim nibh, in sodales magna accumsan et. Donec pellentesque nibh eu aliquam accumsan. Nullam eleifend vitae odio id posuere. In ex velit, scelerisque vel diam eget, sodales pretium eros. Mauris pulvinar sem et faucibus placerat. Mauris iaculis nisi vel nulla euismod, in tempus massa iaculis. Vestibulum "),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(Icons.more_vert_outlined,
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${teacherDetails['Name']}",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
                                         color: brownColor),
-                                    Padding(
-                                      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                      child:
-                                          Icon(Icons.reply, color: brownColor),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                      child: Icon(Icons.thumb_up,
-                                          color: brownColor),
-                                    ),
-                                    Text(' 10'),
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.fromLTRB(10.0, 0, 0, 0),
-                                      child: Icon(Icons.thumb_down,
-                                          color: brownColor),
-                                    ),
-                                    Text(' 2'),
-                                  ],
-                                ),
-                              ],
-                            ))),
-                    Row(
-                      children: [
-                        TextButton(
-                            onPressed: () {
-                              print("Replied");
-                            },
-                            child: const Text("Reply")),
-                        TextButton(
-                            onPressed: () {
-                              print("Upvoted");
-                            },
-                            child: const Text("Upvote")),
-                        TextButton(
-                            onPressed: () {
-                              print("Downvoted");
-                            },
-                            child: const Text("Downvote"))
+                                  ),
+                                  Text("${teacherDetails['Title']}"),
+                                  Text("Email ${teacherDetails['Email']}"),
+                                  Text(
+                                      "Department: ${teacherDetails['Department']}"),
+                                  Text(
+                                      "Specialization: ${teacherDetails['Specialization']}"),
+                                  Text(
+                                      "Onboard Status: ${teacherDetails['Onboard Status']}"),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        // Text("Overview: ${teacherDetails['Overview']}"),
+                        // Text("Courses Taught: ${teacherDetails['Courses Taught']}"),
+
+                        FutureBuilder<List<dynamic>>(
+                          future: MongodbConnection().allParentReviews(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            } else {
+                              var comments = snapshot.data ?? [];
+                              return ListView.builder(
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: comments.length,
+                                itemBuilder: (context, index) {
+                                  return CommentWidget(
+                                      comment: comments[index]);
+                                },
+                              );
+                            }
+                          },
+                        ),
                       ],
-                    ),
+                    )
+                  ],
+                );
+              }
+            },
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: CommentForm(),
+        ),
+      ]),
+    );
+  }
+}
 
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
-                      child: Card(
-                          // isexpanded for keeping track of if the subtitle is expanded or not
-                          child: ListTile(
-                              title: Row(
-                                children: [
-                                  Icon(Icons.person,
-                                      color: brownColor, size: 40),
-                                  Text('John Doe',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              subtitle: Column(
-                                children: [
-                                  Text(
-                                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean viverra ex a nisl porta, quis rhoncus neque vehicula. Sed gravida enim nibh, in sodales magna accumsan et. Donec pellentesque nibh eu aliquam accumsan. Nullam eleifend vitae odio id posuere. In ex velit, scelerisque vel diam eget, sodales pretium eros. Mauris pulvinar sem et faucibus placerat. Mauris iaculis nisi vel nulla euismod, in tempus massa iaculis. Vestibulum "),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Icon(Icons.more_vert_outlined,
-                                          color: brownColor),
-                                      Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                        child: Icon(Icons.reply,
-                                            color: brownColor),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                        child: Icon(Icons.thumb_up,
-                                            color: brownColor),
-                                      ),
-                                      Text(' 10'),
-                                      Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(10.0, 0, 0, 0),
-                                        child: Icon(Icons.thumb_down,
-                                            color: brownColor),
-                                      ),
-                                      Text(' 2'),
-                                    ],
-                                  ),
-                                ],
-                              ))),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(40, 0, 0, 0),
-                      child: Row(
-                        children: [
-                          TextButton(
-                              onPressed: () {
-                                print("Replied");
-                              },
-                              child: const Text("Reply")),
-                          TextButton(
-                              onPressed: () {
-                                print("Upvoted");
-                              },
-                              child: const Text("Upvote")),
-                          TextButton(
-                              onPressed: () {
-                                print("Downvoted");
-                              },
-                              child: const Text("Downvote"))
-                        ],
-                      ),
-                    ),
+class CommentForm extends StatefulWidget {
+  @override
+  _CommentFormState createState() => _CommentFormState();
+}
 
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(80, 0, 0, 0),
-                      child: Card(
-                          // isexpanded for keeping track of if the subtitle is expanded or not
-                          child: ListTile(
-                              title: Row(
-                                children: [
-                                  Icon(Icons.person,
-                                      color: brownColor, size: 40),
-                                  Text('John Doe',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              subtitle: Column(
-                                children: [
-                                  Text(
-                                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean viverra ex a nisl porta, quis rhoncus neque vehicula. Sed gravida enim nibh, in sodales magna accumsan et. Donec pellentesque nibh eu aliquam accumsan. Nullam eleifend vitae odio id posuere. In ex velit, scelerisque vel diam eget, sodales pretium eros. Mauris pulvinar sem et faucibus placerat. Mauris iaculis nisi vel nulla euismod, in tempus massa iaculis. Vestibulum "),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Icon(Icons.more_vert_outlined,
-                                          color: brownColor),
-                                      Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                        child: Icon(Icons.reply,
-                                            color: brownColor),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                        child: Icon(Icons.thumb_up,
-                                            color: brownColor),
-                                      ),
-                                      Text(' 10'),
-                                      Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(10.0, 0, 0, 0),
-                                        child: Icon(Icons.thumb_down,
-                                            color: brownColor),
-                                      ),
-                                      Text(' 2'),
-                                    ],
-                                  ),
-                                ],
-                              ))),
+class _CommentFormState extends State<CommentForm> {
+  final _formKey = GlobalKey<FormState>();
+  String _review = '';
+  int? _parentId; // null for new comments, set for replies
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context)
+            .viewInsets
+            .bottom, // Make room for the keyboard
+      ),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            key: _formKey,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextFormField(
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(80, 0, 0, 0),
-                      child: Row(
-                        children: [
-                          TextButton(
-                              onPressed: () {
-                                print("Replied");
-                              },
-                              child: const Text("Reply")),
-                          TextButton(
-                              onPressed: () {
-                                print("Upvoted");
-                              },
-                              child: const Text("Upvote")),
-                          TextButton(
-                              onPressed: () {
-                                print("Downvoted");
-                              },
-                              child: const Text("Downvote"))
-                        ],
+                    decoration: const InputDecoration(
+                      hintText: "Post a Review",
+                      hintStyle: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                       ),
+                      border: OutlineInputBorder(),
                     ),
+                    onSaved: (value) => _review = value ?? '',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a review';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      // Your logic to post the review goes here
+                      // Remember to handle _parentId correctly for parent comments and replies
+                      // Reset the form and _parentId as needed after posting
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CommentWidget extends StatefulWidget {
+  final dynamic comment;
+
+  const CommentWidget({Key? key, required this.comment}) : super(key: key);
+
+  @override
+  _CommentWidgetState createState() => _CommentWidgetState();
+}
+
+class _CommentWidgetState extends State<CommentWidget> {
+  List<dynamic>? _replies; // Now this can be null or have replies
+
+  void _fetchReplies() async {
+    if (_replies == null) {
+      // Fetch replies only if they haven't been fetched
+      var replies =
+          await MongodbConnection().fetchReplies(widget.comment['comment_id']);
+      setState(() {
+        _replies = replies;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Card(
+          child: ListTile(
+            title: Row(
+              children: [
+                const Icon(Icons.person,
+                    color: Colors.brown, size: 40),
+                Text(widget.comment['comment_maker'],
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Text(widget.comment['Comment']),
+                Row(
+                  mainAxisAlignment:
+                  MainAxisAlignment.end,
+                  children: [
+                    const Icon(Icons.more_vert_outlined,
+                        color: Colors.brown),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          10, 0, 0, 0),
+                      child: Icon(Icons.reply,
+                          color: Colors.brown),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          20, 0, 0, 0),
+                      child: Icon(Icons.thumb_up,
+                          color: Colors.brown),
+                    ),
+                    Text(' ${widget.comment['upvotes']}'),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          10.0, 0, 0, 0),
+                      child: Icon(Icons.thumb_down,
+                          color: Colors.brown),
+                    ),
+                    Text(' ${widget.comment['downvotes']}'),
                   ],
                 ),
-              ),
-            );
-          }
-        },
-      ),
+              ],
+            ),
+          ),
+        ),
+        if (_replies ==
+            null) // Show the button only if replies haven't been fetched
+          TextButton(
+            onPressed: _fetchReplies,
+            child: const Text("View Replies"),
+          ),
+        // Display replies if there are any
+        if (_replies != null)
+          ..._replies!.map((reply) => Card(
+                color: Colors.grey[200],
+                child: ListTile(
+                  title: Text(reply['Comment']),
+                  subtitle: Text(
+                      "Rating: ${reply['Rating']} by ${reply['comment_maker']}"),
+                ),
+              )),
+      ],
     );
   }
 }
