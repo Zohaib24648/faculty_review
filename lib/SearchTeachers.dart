@@ -195,8 +195,8 @@ class TeacherCard extends StatelessWidget {
         child: Column(
           // mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            if (bytes.isNotEmpty) Image.memory(bytes, fit: BoxFit.cover,), // Show image only if bytes are not empty
-            Text(name, style: TextStyle(fontWeight: FontWeight.bold)),
+            if (bytes.isNotEmpty) Image.memory(bytes, fit: BoxFit.fill,), // Show image only if bytes are not empty
+            Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
             Text(title),
           ],
         ),

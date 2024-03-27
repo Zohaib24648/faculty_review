@@ -14,7 +14,7 @@ class MongodbConnection {
   // Initialize and/or get the Db instance
   static Future<Db> getDb() async {
     if (_db == null) {
-      _db = await Db.create("mongodb+srv://Zohaib24648:Zohaib24648@userlogins.94nzbbm.mongodb.net/FacultyReviews?retryWrites=true&w=majority&appName=UserLogins");
+      _db = await Db.create("mongodb+srv://Zohaib24648:Zohaib24648@userlogins.94nzbbm.mongodb.net/AcademiQ?retryWrites=true&w=majority&appName=UserLogins");
       await _db!.open();
       print("Connected to the database");
     }
@@ -35,7 +35,7 @@ class MongodbConnection {
   Future<List> allTeacher() async {
     var db = await getDb(); // Use the singleton Db instance
     try {
-      List<dynamic> data = await db.collection('Logins').find().toList();
+      List<dynamic> data = await db.collection('teachers').find().toList();
       return data;
     } catch (e) {
       print(e);
@@ -48,7 +48,7 @@ class MongodbConnection {
     var db = await getDb(); // Use the singleton Db instance
     try {
       // Query the collection for comments with the specified Parent_id
-      var data = await db.collection('All_Reviews').find({'Parent_id': parentId}).toList();
+      var data = await db.collection('comments').find({'parent_id': parentId}).toList();
 
       print(data); // Debugging: Print fetched replies
       return data;
@@ -59,10 +59,10 @@ class MongodbConnection {
   }
 
 
-  Future<List> allParentReviews() async {
+  Future<List> allParentReviews(String _id) async {
     var db = await getDb(); // Use the singleton Db instance
     try {
-      List<dynamic> data = await db.collection('All_Reviews').find( {'Parent_id':null} ).toList();
+      List<dynamic> data = await db.collection('comments').find( {'Parent_id':null , '_id': _id} ).toList();
       print(data);
       return data;
     } catch (e) {
@@ -76,7 +76,7 @@ class MongodbConnection {
   Future<List> Teachers() async {
     var db = await getDb(); // Use the singleton Db instance
     try {
-      List<dynamic> data = await db.collection('Teachers').find().toList();
+      List<dynamic> data = await db.collection('teachers').find().toList();
       return data;
     } catch (e) {
       print(e);
@@ -88,7 +88,7 @@ class MongodbConnection {
     print(email); // For debugging, consider removing later
     var db = await getDb();
     try {
-      var data = await db.collection('Teachers').findOne({"Email": email});
+      var data = await db.collection('teachers').findOne({"Email": email});
       print(data); // For debugging, consider removing later
       return data;
     } catch (e) {

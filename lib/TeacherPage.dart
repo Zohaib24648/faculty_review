@@ -20,8 +20,7 @@ class TeacherPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String _review = '';
-    int?
-        _parentId; // Set this to the Parent_id of the parent comment if it's a reply
+    int? _parentId; // Set this to the Parent_id of the parent comment if it's a reply
     final _formKey = GlobalKey<FormState>();
 
     return Scaffold(
@@ -40,6 +39,7 @@ class TeacherPage extends StatelessWidget {
                     child: Text('Error fetching teacher details or not found'));
               } else {
                 var teacherDetails = snapshot.data!;
+                print(teacherDetails['_id']);
                 Uint8List bytes;
                 try {
                   bytes = base64Decode(teacherDetails['ImageFile']);
@@ -94,7 +94,7 @@ class TeacherPage extends StatelessWidget {
                         // Text("Courses Taught: ${teacherDetails['Courses Taught']}"),
 
                         FutureBuilder<List<dynamic>>(
-                          future: MongodbConnection().allParentReviews(),
+                          future: MongodbConnection().allParentReviews(teacherDetails['Email']),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
@@ -105,7 +105,7 @@ class TeacherPage extends StatelessWidget {
                             } else {
                               var comments = snapshot.data ?? [];
                               return ListView.builder(
-                                physics: NeverScrollableScrollPhysics(),
+                                physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 itemCount: comments.length,
                                 itemBuilder: (context, index) {
@@ -124,7 +124,7 @@ class TeacherPage extends StatelessWidget {
             },
           ),
         ),
-        Align(
+        const Align(
           alignment: Alignment.bottomCenter,
           child: CommentForm(),
         ),
@@ -134,6 +134,8 @@ class TeacherPage extends StatelessWidget {
 }
 
 class CommentForm extends StatefulWidget {
+  const CommentForm({super.key});
+
   @override
   _CommentFormState createState() => _CommentFormState();
 }
@@ -278,8 +280,7 @@ class _CommentWidgetState extends State<CommentWidget> {
             ),
           ),
         ),
-        if (_replies ==
-            null) // Show the button only if replies haven't been fetched
+        if (_replies == null) // Show the button only if replies haven't been fetched
           TextButton(
             onPressed: _fetchReplies,
             child: const Text("View Replies"),
