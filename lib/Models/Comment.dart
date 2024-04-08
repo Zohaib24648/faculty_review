@@ -8,16 +8,16 @@ class Comment {
   final bool anonymous;
   final int teacherId;
   final int courseId;
-  final int upvotes;
-  final List<dynamic> upvotedBy; // Using dynamic because the type is not specified
-  final List<dynamic> downvotedBy; // Using dynamic because the type is not specified
-  final int downvotes;
+  final int upVotes;
+  final List<dynamic> upVotedBy; // Using dynamic because the type is not specified
+  final List<dynamic> downVotedBy; // Using dynamic because the type is not specified
+  final int downVotes;
   final String createdBy;
   final String modifiedBy;
   final DateTime createdAt;
   final DateTime modifiedAt;
   final bool isDeleted;
-  final int version;
+  // final int version;
 
   Comment({
     required this.id,
@@ -29,16 +29,16 @@ class Comment {
     required this.anonymous,
     required this.teacherId,
     required this.courseId,
-    required this.upvotes,
-    required this.upvotedBy,
-    required this.downvotedBy,
-    required this.downvotes,
+    required this.upVotes,
+    required this.upVotedBy,
+    required this.downVotedBy,
+    required this.downVotes,
     required this.createdBy,
     required this.modifiedBy,
     required this.createdAt,
     required this.modifiedAt,
     required this.isDeleted,
-    required this.version,
+    // required this.version,
   });
 
   // Factory constructor for creating a new FeedbackItem instance from a map
@@ -53,16 +53,16 @@ class Comment {
       anonymous: json['anonymous'],
       teacherId: json['teacher_id'],
       courseId: json['course_id'],
-      upvotes: json['upvotes'],
-      upvotedBy: json['upvotedBy'],
-      downvotedBy: json['downvotedBy'],
-      downvotes: json['downvotes'],
+      upVotes: json['upvotes'],
+      upVotedBy: json['upvotedBy'],
+      downVotedBy: json['downvotedBy'],
+      downVotes: json['downvotes'],
       createdBy: json['createdby'],
       modifiedBy: json['modifiedby'],
       createdAt: DateTime.parse(json['createdat']),
       modifiedAt: DateTime.parse(json['modifiedat']),
       isDeleted: json['isDeleted'],
-      version: json['__v'],
+      // version: json['__v'],
     );
   }
 }

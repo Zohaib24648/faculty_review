@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import './RegisterPage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'Screens/RegisterPage.dart';
 import 'mongodbconnection.dart';
 
 
 
 void main() async {
-  MongodbConnection.getDb();
-runApp(const MyApp());
+  MongodbConnection.initializeConnection();
+runApp(const ProviderScope(child: MyApp()));
 
 
 }

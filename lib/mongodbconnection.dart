@@ -1,18 +1,16 @@
+import 'dart:convert';
+
 import 'package:mongo_dart/mongo_dart.dart';
-
+import 'package:faculty_review/Models/Teacher.dart';
 class MongodbConnection {
-  static Db? _db; // Private static instance
+  static final MongodbConnection _instance = MongodbConnection._privateConstructor();
+  static Db? _db;
 
-  // Private constructor
   MongodbConnection._privateConstructor();
 
-  // Public factory constructor
-  factory MongodbConnection() {
-    return MongodbConnection._privateConstructor();
-  }
+  static MongodbConnection get instance => _instance;
 
-  // Initialize and/or get the Db instance
-  static Future<Db> getDb() async {
+  static Future<Db> initializeConnection() async {
     if (_db == null) {
       _db = await Db.create("mongodb+srv://Zohaib24648:Zohaib24648@userlogins.94nzbbm.mongodb.net/AcademiQ?retryWrites=true&w=majority&appName=UserLogins");
       await _db!.open();
@@ -32,20 +30,32 @@ class MongodbConnection {
   }
 
 
-  Future<List> allTeacher() async {
-    var db = await getDb(); // Use the singleton Db instance
+  Future<List<Teacher>> allTeachersCatalogue() async {
+    var db = await initializeConnection();
     try {
-      List<dynamic> data = await db.collection('teachers').find().toList();
-      return data;
+      List<Map<String, dynamic>> teacherMaps = await db.collection('teachers').find().toList();
+      List<Teacher> teachers = teacherMaps.map((map) {
+        try {
+          return Teacher.fromJson(map);
+        } catch (e) {
+          print("Error parsing teacher data: $e");
+          return null; // Return null if there's an error parsing a teacher
+        }
+      }).where((teacher) => teacher != null).cast<Teacher>().toList(); // Filter out null values and cast to Teacher
+      return teachers;
     } catch (e) {
       print(e);
       return [];
     }
   }
 
+
+
+
+
   // Method to fetch replies for a specific parent comment
   Future<List<Map<String, dynamic>>> fetchReplies(int parentId) async {
-    var db = await getDb(); // Use the singleton Db instance
+    var db = await initializeConnection(); // Use the singleton Db instance
     try {
       // Query the collection for comments with the specified Parent_id
       var data = await db.collection('comments').find({'parent_id': parentId}).toList();
@@ -60,7 +70,7 @@ class MongodbConnection {
 
 
   Future<List> allParentReviews(String _id) async {
-    var db = await getDb(); // Use the singleton Db instance
+    var db = await initializeConnection(); // Use the singleton Db instance
     try {
       List<dynamic> data = await db.collection('comments').find( {'Parent_id':null , '_id': _id} ).toList();
       print(data);
@@ -73,20 +83,9 @@ class MongodbConnection {
 
 
 
-  Future<List> Teachers() async {
-    var db = await getDb(); // Use the singleton Db instance
-    try {
-      List<dynamic> data = await db.collection('teachers').find().toList();
-      return data;
-    } catch (e) {
-      print(e);
-      return [];
-    }
-  }
-
   Future<Map<String, dynamic>?> FindTeacher(String email) async {
     print(email); // For debugging, consider removing later
-    var db = await getDb();
+    var db = await initializeConnection();
     try {
       var data = await db.collection('teachers').findOne({"Email": email});
       print(data); // For debugging, consider removing later
@@ -101,7 +100,7 @@ class MongodbConnection {
 
 
   Future<List> allMajors() async {
-    var db = await getDb(); // Use the singleton Db instance
+    var db = await initializeConnection(); // Use the singleton Db instance
     try {
       List<dynamic> data = await db.collection('allMajors').find().toList();
       return data;
@@ -112,7 +111,7 @@ class MongodbConnection {
   }
 
   Future<List> allCourses() async {
-    var db = await getDb(); // Use the singleton Db instance
+    var db = await initializeConnection(); // Use the singleton Db instance
     try {
       List<dynamic> data = await db.collection('Courses').find().toList();
       return data;
