@@ -38,22 +38,22 @@ class Teacher {
   });
   factory Teacher.fromJson(Map<String, dynamic> json) {
     return Teacher(
-      id: json['_id'].$oid.toString(), // Convert ObjectId to string
-      name: json['Name'] as String? ?? '',
-      title: json['Title'] as String? ?? '',
-      email: json['Email'] as String? ?? '',
-      overview: json['Overview'] as String? ?? '',
+        id: json['_id'].$oid.toString(), // Convert ObjectId to string
+      name: json['Name']?.toString() ?? '', // Ensure value is converted to String
+      title: json['Title']?.toString() ?? '',
+      email: json['Email']?.toString() ?? '',
+      overview: json['Overview']?.toString() ?? '',
       coursesTaught: List<String>.from(json['CoursesTaught'] as List? ?? []),
-      department: json['Department'] as String? ?? '',
-      specialization: json['Specialization'] as String? ?? '',
-      onboardStatus: json['OnboardStatus'] as String? ?? '',
-      imageFile: json['ImageFile'] as String? ?? '',
-      coursesTaughtIDs: (json['CoursesTaughtIDs'] as List? ?? []).map((item) => ObjectId.parse((item as ObjectId).toHexString())).toList(),
-      createdAt: DateTime.parse(json['CreatedAt'] as String? ?? '1970-01-01T00:00:00Z'),
-      createdBy: json['CreatedBy'] as String? ?? '',
+      department: json['Department']?.toString() ?? '',
+      specialization: json['Specialization']?.toString() ?? '',
+      onboardStatus: json['OnboardStatus']?.toString() ?? '',
+      imageFile: json['ImageFile']?.toString() ?? '',
+      coursesTaughtIDs: (json['CoursesTaughtIDs'] as List? ?? []).map((item) => item as ObjectId).toList(),
+      createdAt: DateTime.parse(json['CreatedAt']?.toString() ?? '1970-01-01T00:00:00Z'),
+      createdBy: json['CreatedBy']?.toString() ?? '',
       isDeleted: json['IsDeleted'] as bool? ?? false,
-      modifiedAt: DateTime.parse(json['ModifiedAt'] as String? ?? '1970-01-01T00:00:00Z'),
-      modifiedBy: json['ModifiedBy'] as String? ?? '',
+      modifiedAt: DateTime.parse(json['ModifiedAt']?.toString() ?? '1970-01-01T00:00:00Z'),
+      modifiedBy: json['ModifiedBy']?.toString() ?? '',
     );
   }
 

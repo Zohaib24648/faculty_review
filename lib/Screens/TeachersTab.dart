@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:faculty_review/Providers/TeacherProvider.dart';
+
+import 'TeacherPage.dart';
 class TeachersTab extends ConsumerWidget {
   const TeachersTab({super.key});
 
@@ -71,7 +73,12 @@ class TeacherCard extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        // Navigate to the teacher's page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TeacherPage(email: email),
+          ),
+        );
       },
       child: Card(
         shape: RoundedRectangleBorder(
