@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -16,14 +18,12 @@ class TeachersTab extends ConsumerWidget {
       data: (teachers) {
         return CustomScrollView(
           slivers: <Widget>[
-            SliverPadding(
-              padding: const EdgeInsets.all(10),
-              sliver: SliverGrid(
+             SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: 2 / 3,
+                  childAspectRatio: 3 / 5,
                 ),
                 delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) {
@@ -38,7 +38,6 @@ class TeachersTab extends ConsumerWidget {
                   childCount: teachers.length,
                 ),
               ),
-            ),
           ],
         );
       },
@@ -81,16 +80,31 @@ class TeacherCard extends StatelessWidget {
         );
       },
       child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        color: Colors.white,
+        shadowColor: Colors.white70,
+        surfaceTintColor: Colors.white,
+        // shape: RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.circular(10),
+        // ),
         elevation: 4,
         child: Column(
           children: <Widget>[
-            if (bytes.isNotEmpty) Image.memory(bytes, fit: BoxFit.fill),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(title),
-            Text(email, style: const TextStyle(color: Colors.grey)),
+
+            Expanded(flex: 3,
+                child: Container(child: Image.memory(bytes, fit: BoxFit.fill))),
+            Expanded(
+              flex: 1,
+              child: Container(
+                child: Column(
+                  children:[
+                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold),maxLines: 1,),
+                    Text(title, maxLines: 1),
+                    Text(email, style: const TextStyle(color: Colors.grey),maxLines: 1,),
+                  ]
+                )
+              ),
+            )
+
           ],
         ),
       ),

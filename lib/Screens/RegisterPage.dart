@@ -32,7 +32,7 @@ class _RegisterPageState extends State<RegisterPage> {
         0.95; // Define a maximum width for the content
     return Scaffold(
 
-      appBar:  Constants.constantAppBar,
+      appBar:  const CustomAppBar(title: "AcademiQ"),
       body: Column(
         children: [
           Expanded(

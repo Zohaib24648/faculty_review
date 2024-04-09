@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../constants.dart';
+import '../constants.dart'; // Make sure this path is correct
 import 'package:faculty_review/Providers/TeacherProvider.dart';
 import 'package:faculty_review/Models/Teacher.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:buttons_tabbar/buttons_tabbar.dart';
 
-class TeacherPage extends ConsumerWidget {
+class TeacherPage extends ConsumerStatefulWidget {
   final String email;
 
   const TeacherPage({
@@ -15,27 +17,46 @@ class TeacherPage extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _TeacherPageState createState() => _TeacherPageState();
+}
+
+class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final teachersAsyncValue = ref.watch(teachersProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Teacher Details'),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: teachersAsyncValue.when(
-              data: (teachers) {Teacher? teacher;
-              for (final t in teachers) {
-                print("Looping to find teacher");
-                if (t.email == email) {
-                  teacher = t;
-                  break;
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            teachersAsyncValue.when(
+              data: (teachers) {
+                Teacher? teacher;
+                for (final t in teachers) {
+                  if (t.email == widget.email) {
+                    teacher = t;
+                    break;
+                  }
                 }
-              }
 
-              if (teacher != null) {
+                if (teacher != null) {
                   Uint8List bytes = Uint8List(0);
                   try {
                     bytes = base64Decode(teacher.imageFile);
@@ -47,31 +68,105 @@ class TeacherPage extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          if (bytes.isNotEmpty)
-                            Expanded(
-                              flex: 3,
-                              child: Container(
-                                padding: const EdgeInsets.fromLTRB(0, 10, 10, 10),
-                                child: Image.memory(bytes, fit: BoxFit.cover),
+                          Expanded(
+                            flex: 3,
+                            child: Container(child: Image.memory(bytes, fit: BoxFit.cover)),
+                          ),
+                          Expanded(
+                            flex: 5,
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    child: Text(teacher.name,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                            color: brownColor)),
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Attendance: ',
+                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                          ),
+                                          Text(
+                                            'Grading: ',
+                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                          ),
+                                          Text(
+                                            'Workload: ',
+                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                          ),
+                                          Text(
+                                            'Learning: ',
+                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          RatingBarIndicator(
+                                            rating: teacher.ratings[0].toDouble(),
+                                            itemBuilder: (context, index) => const Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            itemCount: 5,
+                                            itemSize: 20.0,
+                                          ),
+                                          RatingBarIndicator(
+                                            rating: teacher.ratings[1].toDouble(),
+                                            itemBuilder: (context, index) => const Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            itemCount: 5,
+                                            itemSize: 20.0,
+                                          ),
+                                          RatingBarIndicator(
+                                            rating: teacher.ratings[2].toDouble(),
+                                            itemBuilder: (context, index) => const Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            itemCount: 5,
+                                            itemSize: 20.0,
+                                          ),
+                                          RatingBarIndicator(
+                                            rating: teacher.ratings[3].toDouble(),
+                                            itemBuilder: (context, index) => const Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            itemCount: 5,
+                                            itemSize: 20.0,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  Text("Total Ratings: ${teacher.totalRatings}"),
+                                ],
                               ),
                             ),
-                          Expanded(
-                            flex: 4,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(teacher.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: brownColor)),
-                                Text(teacher.title),
-                                Text("Email: ${teacher.email}"),
-                                Text("Department: ${teacher.department}"),
-                                Text("Specialization: ${teacher.specialization}"),
-                                Text("Onboard Status: ${teacher.onboardStatus}"),
-                              ],
-                            ),
-                          )
+                          ),
                         ],
                       ),
-                      // Display additional details or comments as needed
+                      Column(
+                        children: [
+                          Text(teacher.title),
+                          Text("Email: ${teacher.email}"),
+                          Text("Department: ${teacher.department}"),
+                          Text("Specialization: ${teacher.specialization}"),
+                          Text("Onboard Status: ${teacher.onboardStatus}"),
+                        ],
+                      ),
                     ],
                   );
                 } else {
@@ -81,12 +176,31 @@ class TeacherPage extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => Center(child: Text('Error: $error')),
             ),
-          ),
-          const Align(
-            alignment: Alignment.bottomCenter,
-            child: CommentForm(),
-          ),
-        ],
+            ButtonsTabBar(
+              controller: _tabController,
+              backgroundColor: Colors.blue,
+              unselectedBackgroundColor: Colors.grey[300],
+              unselectedLabelStyle: TextStyle(color: Colors.black),
+              labelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              tabs: [
+                Tab(text: "Overview"),
+                Tab(text: "Courses Taught"),
+                Tab(text: "Details"),
+              ],
+            ),
+            SizedBox(
+              height: 300,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  Center(child: Text('Overview Content')),
+                  Center(child: Text('Courses Taught Content')),
+                  Center(child: Text('Details Content')),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -107,7 +221,7 @@ class _CommentFormState extends State<CommentForm> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom, // Make room for the keyboard
+        bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Card(
         child: Padding(
@@ -118,14 +232,22 @@ class _CommentFormState extends State<CommentForm> {
               children: <Widget>[
                 Expanded(
                   child: TextFormField(
-                    style: const TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold),
                     decoration: const InputDecoration(
                       hintText: "Post a Review",
-                      hintStyle: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold),
+                      hintStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold),
                       border: OutlineInputBorder(),
                     ),
                     onSaved: (value) => _review = value ?? '',
-                    validator: (value) => value == null || value.trim().isEmpty ? 'Please enter a review' : null,
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Please enter a review'
+                        : null,
                   ),
                 ),
                 IconButton(

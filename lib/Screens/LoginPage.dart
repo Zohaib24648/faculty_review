@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
     final maxWidth = deviceWidth > 600 ? 600.0 : deviceWidth * 0.95;
 
     return Scaffold(
-      appBar: Constants.constantAppBar,
+      appBar: CustomAppBar(title: "AcademiQ"),
       body: Column(
         children: [
           Expanded(
