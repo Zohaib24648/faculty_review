@@ -1,13 +1,13 @@
-import 'package:faculty_review/SearchTeachers.dart';
 import 'package:flutter/material.dart';
-import './RegisterPage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'Screens/RegisterPage.dart';
 import 'mongodbconnection.dart';
 
 
 
 void main() async {
-  MongodbConnection.getDb();
-runApp(const MyApp());
+  MongodbConnection.initializeConnection();
+runApp(const ProviderScope(child: MyApp()));
 
 
 }
@@ -18,9 +18,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'AcademiQ',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+
+        ),
+        primarySwatch: Colors.brown,
       ),
       home:  const RegisterPage(),
     );

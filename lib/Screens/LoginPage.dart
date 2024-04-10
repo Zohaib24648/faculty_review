@@ -1,50 +1,32 @@
-import 'package:faculty_review/LoginPage.dart';
+
+import 'package:faculty_review/Screens/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'constants.dart';
-import 'main.dart';
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+import 'RegisterPage.dart';
+import '../constants.dart';
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-
+class _LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
 
   void _togglePasswordVisibility() {
     setState(() {
       _obscureText = !_obscureText;
     });
-
-
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Register'),
-        ),
-        body: const Center(
-          child: Text('Register Page'),
-        ),
-      );
-    }
   }
-
 
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final maxWidth = deviceWidth > 600 ? 600.0 : deviceWidth *
-        0.95; // Define a maximum width for the content
-    return Scaffold(
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final maxWidth = deviceWidth > 600 ? 600.0 : deviceWidth * 0.95;
 
-      appBar:  Constants.constantAppBar,
+    return Scaffold(
+      appBar: CustomAppBar(title: "AcademiQ"),
       body: Column(
         children: [
           Expanded(
@@ -76,19 +58,15 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: const InputDecoration(
                             hintText: "Erp or Email",
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff700f1a), width: 5,),
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)),
+                              borderSide: BorderSide(color: brownColor, width: 5,),
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                           ),
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            fontFamily: GoogleFonts
-                                .spaceMono()
-                                .fontFamily,
+                            fontFamily: GoogleFonts.spaceMono().fontFamily,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -110,15 +88,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           decoration: InputDecoration(
                             hintText: "Enter your Password",
                             focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff700f1a), width: 5,),
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)),
+                              borderSide: BorderSide(color: brownColor, width: 5,),
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                             suffixIcon: IconButton(
-                              icon: Icon(
-                                  _obscureText ? Icons.visibility_off : Icons
-                                      .visibility),
+                              icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
                               onPressed: _togglePasswordVisibility,
                             ),
                           ),
@@ -126,49 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             color: Colors.black,
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            fontFamily: GoogleFonts
-                                .spaceMono()
-                                .fontFamily,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          shape: BoxShape.rectangle,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1,
-                          ),
-                        ),
-                        child: TextFormField(
-                          obscureText: _obscureText,
-                          decoration: InputDecoration(
-                            hintText: "Confirm your Password",
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff700f1a), width: 5,),
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                  _obscureText ? Icons.visibility_off : Icons
-                                      .visibility),
-                              onPressed: _togglePasswordVisibility,
-                            ),
-                          ),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: GoogleFonts
-                                .spaceMono()
-                                .fontFamily,
+                            fontFamily: GoogleFonts.spaceMono().fontFamily,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -180,7 +112,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const HomePage()),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xff700f1a),
                                 padding: const EdgeInsets.all(10),
@@ -189,7 +126,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                               ),
                               child: const Text(
-                                'Register',
+                                'Login',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,
@@ -204,16 +141,17 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextButton (onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                        MaterialPageRoute(builder: (context) => RegisterPage()),
                       );
                     },
 
                       child: const Text
-                        ('Already Have an account? Login.', style: TextStyle(
+                        ('Register?', style: TextStyle(
                         color: Colors.black,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),),),
+
                   ],
                 ),
               ),
@@ -226,9 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Text(
                 'Dev by: Zohaib Mughal',
                 style: TextStyle(
-                  fontFamily: GoogleFonts
-                      .roboto()
-                      .fontFamily,
+                  fontFamily: GoogleFonts.roboto().fontFamily,
                   fontSize: 15,
                   color: Colors.black,
                 ),
@@ -240,5 +176,4 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: const Color(0xffffffff),
     );
   }
-
 }

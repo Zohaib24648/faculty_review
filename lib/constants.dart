@@ -1,26 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const Color brownColor = Color(0xff700f1a);
 
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
 
-class Constants {
+  const CustomAppBar({super.key, required this.title});
 
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text(title),
+      // Add other AppBar properties if needed
+    );
+  }
 
-  static final AppBar constantAppBar = AppBar(
-    backgroundColor: Colors.white,
-    title: const Center(
-      child: Text(
-        'Faculty Reviews',
-        style: TextStyle(
-          color: brownColor,
-          fontSize: 25,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 2,
-        ),
-      ),
-    ),
-  );
-
-  Constants();
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
