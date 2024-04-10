@@ -1,13 +1,15 @@
+import 'package:mongo_dart/mongo_dart.dart';
+
 class Comment {
-  final String id;
+  final ObjectId id;
   final int erp;
   final String name;
   final String? parentId; // Nullable because it can be null
   final String comment;
-  final List<int> rating;
+  final List<dynamic> rating;
   final bool anonymous;
-  final int teacherId;
-  final int courseId;
+  final ObjectId teacherId;
+  final ObjectId courseId;
   final int upVotes;
   final List<dynamic> upVotedBy; // Using dynamic because the type is not specified
   final List<dynamic> downVotedBy; // Using dynamic because the type is not specified
@@ -44,25 +46,26 @@ class Comment {
   // Factory constructor for creating a new FeedbackItem instance from a map
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
-      id: json['_id'],
-      erp: json['erp'],
-      name: json['name'],
-      parentId: json['parent_id'],
-      comment: json['comment'],
-      rating: List<int>.from(json['rating']),
-      anonymous: json['anonymous'],
-      teacherId: json['teacher_id'],
-      courseId: json['course_id'],
-      upVotes: json['upvotes'],
-      upVotedBy: json['upvotedBy'],
-      downVotedBy: json['downvotedBy'],
-      downVotes: json['downvotes'],
-      createdBy: json['createdby'],
-      modifiedBy: json['modifiedby'],
-      createdAt: DateTime.parse(json['createdat']),
-      modifiedAt: DateTime.parse(json['modifiedat']),
-      isDeleted: json['isDeleted'],
-      // version: json['__v'],
+      id: json['_id'] as ObjectId,
+      erp: json['erp'] as int,
+      name: json['name'] as String,
+      parentId: json['parent_id'] as String?,
+      comment: json['comment'] as String,
+      rating: List<dynamic>.from(json['rating'] as List),
+      anonymous: json['anonymous'] as bool,
+      teacherId: json['teacher_id'] as ObjectId,
+      courseId: json['course_id'] as ObjectId,
+      upVotes: json['upvotes'] as int,
+      upVotedBy: json['upvotedBy'] as List<dynamic>,
+      downVotedBy: json['downvotedBy'] as List<dynamic>,
+      downVotes: json['downvotes'] as int,
+      createdBy: json['createdby'] as String,
+      modifiedBy: json['modifiedby'] as String,
+      createdAt: json['createdat'] ,
+      modifiedAt: json['modifiedat'],
+      isDeleted: json['isDeleted'] as bool,
     );
   }
+
+
 }

@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -91,17 +89,15 @@ class TeacherCard extends StatelessWidget {
           children: <Widget>[
 
             Expanded(flex: 3,
-                child: Container(child: Image.memory(bytes, fit: BoxFit.fill))),
+                child: Image.memory(bytes, fit: BoxFit.fill)),
             Expanded(
               flex: 1,
-              child: Container(
-                child: Column(
-                  children:[
-                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold),maxLines: 1,),
-                    Text(title, maxLines: 1),
-                    Text(email, style: const TextStyle(color: Colors.grey),maxLines: 1,),
-                  ]
-                )
+              child: Column(
+                children:[
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold),maxLines: 1,),
+                  Text(title, maxLines: 1),
+                  Text(email, style: const TextStyle(color: Colors.grey),maxLines: 1,),
+                ]
               ),
             )
 

@@ -1,7 +1,10 @@
+
 import 'dart:convert';
 
+import 'package:faculty_review/Models/Comment.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:faculty_review/Models/Teacher.dart';
+import 'package:faculty_review/Models/Comment.dart';
 class MongodbConnection {
   static final MongodbConnection _instance = MongodbConnection._privateConstructor();
   static Db? _db;
@@ -69,21 +72,19 @@ class MongodbConnection {
   }
 
 
-  Future<List> allParentReviews(String _id) async {
-    var db = await initializeConnection(); // Use the singleton Db instance
-    try {
-      List<dynamic> data = await db.collection('comments').find( {'Parent_id':null , '_id': _id} ).toList();
-      print(data);
-      return data;
-    } catch (e) {
-      print(e);
-      return [];
-    }
+  Future<List<Comment>> allTeacherParentReviews(String teacher_id) async {
+    var db = await initializeConnection();
+    List<Map<String, dynamic>> data = await db.collection('comments').find({'teacher_id': ObjectId.fromHexString(teacher_id)}).toList();
+
+    List<Comment> comments = data.map((map) => Comment.fromJson(map)).toList();
+
+    return comments;
   }
 
 
 
-  Future<Map<String, dynamic>?> FindTeacher(String email) async {
+
+  Future<Map<String, dynamic>?> findTeacher(String email) async {
     print(email); // For debugging, consider removing later
     var db = await initializeConnection();
     try {

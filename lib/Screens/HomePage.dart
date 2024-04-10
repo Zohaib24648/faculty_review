@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
-import 'CoursesTab.dart';
-import 'HomeFeedTab.dart';
 import 'TeachersTab.dart';
 
 class HomePage extends StatelessWidget {

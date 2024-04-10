@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'RegisterPage.dart';
 import '../constants.dart';
-import 'TeachersCatalogue.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 

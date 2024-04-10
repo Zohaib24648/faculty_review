@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../Providers/CommentProvider.dart';
 import '../constants.dart'; // Make sure this path is correct
 import 'package:faculty_review/Providers/TeacherProvider.dart';
 import 'package:faculty_review/Models/Teacher.dart';
@@ -17,12 +19,13 @@ class TeacherPage extends ConsumerStatefulWidget {
   });
 
   @override
-  _TeacherPageState createState() => _TeacherPageState();
+  TeacherPageState createState() => TeacherPageState();
 }
 
-class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
 
+class TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  Teacher? teacher;
   @override
   void initState() {
     super.initState();
@@ -48,7 +51,6 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
           children: [
             teachersAsyncValue.when(
               data: (teachers) {
-                Teacher? teacher;
                 for (final t in teachers) {
                   if (t.email == widget.email) {
                     teacher = t;
@@ -59,7 +61,7 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                 if (teacher != null) {
                   Uint8List bytes = Uint8List(0);
                   try {
-                    bytes = base64Decode(teacher.imageFile);
+                    bytes = base64Decode(teacher!.imageFile);
                   } catch (e) {
                     // Handle error or use a placeholder image
                   }
@@ -70,7 +72,7 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                         children: [
                           Expanded(
                             flex: 3,
-                            child: Container(child: Image.memory(bytes, fit: BoxFit.cover)),
+                            child: Image.memory(bytes, fit: BoxFit.cover),
                           ),
                           Expanded(
                             flex: 5,
@@ -80,7 +82,7 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                                 children: [
                                   Container(
                                     margin: const EdgeInsets.only(bottom: 10),
-                                    child: Text(teacher.name,
+                                    child: Text(teacher!.name,
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 22,
@@ -112,7 +114,7 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                                       Column(
                                         children: [
                                           RatingBarIndicator(
-                                            rating: teacher.ratings[0].toDouble(),
+                                            rating: teacher!.ratings[0].toDouble(),
                                             itemBuilder: (context, index) => const Icon(
                                               Icons.star,
                                               color: Colors.amber,
@@ -121,7 +123,7 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                                             itemSize: 20.0,
                                           ),
                                           RatingBarIndicator(
-                                            rating: teacher.ratings[1].toDouble(),
+                                            rating: teacher!.ratings[1].toDouble(),
                                             itemBuilder: (context, index) => const Icon(
                                               Icons.star,
                                               color: Colors.amber,
@@ -130,7 +132,7 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                                             itemSize: 20.0,
                                           ),
                                           RatingBarIndicator(
-                                            rating: teacher.ratings[2].toDouble(),
+                                            rating: teacher!.ratings[2].toDouble(),
                                             itemBuilder: (context, index) => const Icon(
                                               Icons.star,
                                               color: Colors.amber,
@@ -139,7 +141,7 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                                             itemSize: 20.0,
                                           ),
                                           RatingBarIndicator(
-                                            rating: teacher.ratings[3].toDouble(),
+                                            rating: teacher!.ratings[3].toDouble(),
                                             itemBuilder: (context, index) => const Icon(
                                               Icons.star,
                                               color: Colors.amber,
@@ -151,22 +153,22 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
                                       ),
                                     ],
                                   ),
-                                  Text("Total Ratings: ${teacher.totalRatings}"),
+                                  Text("Total Ratings: ${teacher!.totalRatings}"),
                                 ],
                               ),
                             ),
                           ),
                         ],
                       ),
-                      Column(
-                        children: [
-                          Text(teacher.title),
-                          Text("Email: ${teacher.email}"),
-                          Text("Department: ${teacher.department}"),
-                          Text("Specialization: ${teacher.specialization}"),
-                          Text("Onboard Status: ${teacher.onboardStatus}"),
-                        ],
-                      ),
+                      // Column(
+                      //   children: [
+                      //     Text(teacher!.title),
+                      //     Text("Email: ${teacher!.email}"),
+                      //     Text("Department: ${teacher!.department}"),
+                      //     Text("Specialization: ${teacher!.specialization}"),
+                      //     Text("Onboard Status: ${teacher!.onboardStatus}"),
+                      //   ],
+                      // ),
                     ],
                   );
                 } else {
@@ -180,9 +182,9 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
               controller: _tabController,
               backgroundColor: Colors.blue,
               unselectedBackgroundColor: Colors.grey[300],
-              unselectedLabelStyle: TextStyle(color: Colors.black),
-              labelStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              tabs: [
+              unselectedLabelStyle: const TextStyle(color: Colors.black),
+              labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              tabs: const [
                 Tab(text: "Overview"),
                 Tab(text: "Courses Taught"),
                 Tab(text: "Details"),
@@ -193,12 +195,46 @@ class _TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProv
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  Center(child: Text('Overview Content')),
-                  Center(child: Text('Courses Taught Content')),
-                  Center(child: Text('Details Content')),
+                  Center(child: Text(teacher!.overview)),
+                  Center(
+                    child: ListView.builder(
+                 itemCount: teacher!.coursesTaught.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ListTile(
+                          title: Text(teacher!.coursesTaught[index]),
+                        );
+                      },
+                    ),
+                  ),
+                  Center(child: Text(teacher!.toString())),
                 ],
               ),
             ),
+        Consumer(
+        builder: (context, ref, child) {
+      // Assuming teacherId is a String, convert it if necessary
+      final commentsAsyncValue = ref.watch(commentProvider(teacher!.id));
+
+      return commentsAsyncValue.when(
+          data: (comments) {
+        return ListView.builder(
+          shrinkWrap: true, // Important to prevent infinite height
+          physics: NeverScrollableScrollPhysics(), // Disable scrolling within the ListView
+          itemCount: comments.length,
+          itemBuilder: (context, index) {
+            final comment = comments[index];
+            print(comment.toString());
+            return ListTile(
+              title: Text(comment.comment),
+              subtitle: Text('By: ${comment.name}'),
+            );
+          },
+        );}, error: (Object error, StackTrace stackTrace) {
+            print(error);
+           return Text("Error");
+      }, loading: () {
+            return Text("Loading");
+      });})
           ],
         ),
       ),
@@ -210,10 +246,10 @@ class CommentForm extends StatefulWidget {
   const CommentForm({super.key});
 
   @override
-  _CommentFormState createState() => _CommentFormState();
+  CommentFormState createState() => CommentFormState();
 }
 
-class _CommentFormState extends State<CommentForm> {
+class CommentFormState extends State<CommentForm> {
   final _formKey = GlobalKey<FormState>();
   String _review = '';
 
