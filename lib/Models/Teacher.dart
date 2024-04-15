@@ -11,13 +11,13 @@ class Teacher {
   final String specialization;
   final String onboardStatus;
   final String imageFile;
-  final List<ObjectId> coursesTaughtIDs;
+  final List<dynamic> coursesTaughtIDs;
   final DateTime createdAt;
   final String createdBy;
   final bool isDeleted;
   final DateTime modifiedAt;
   final String modifiedBy;
-  final List<ObjectId> ratedBy;
+  final List<dynamic> ratedBy;
   final List<dynamic> ratings;
   final int totalRatings;
 
@@ -45,7 +45,7 @@ class Teacher {
   factory Teacher.fromJson(Map<String, dynamic> json) {
     // print(json);
     return Teacher(
-        id: json['_id'].$oid.toString(), // Convert ObjectId to string
+        id: json['_id'].toString(), // Convert ObjectId to string
       name: json['Name']?.toString() ?? '', // Ensure value is converted to String
       title: json['Title']?.toString() ?? '',
       email: json['Email']?.toString() ?? '',
@@ -55,13 +55,13 @@ class Teacher {
       specialization: json['Specialization']?.toString() ?? '',
       onboardStatus: json['Onboard Status']?.toString() ?? '',
       imageFile: json['ImageFile']?.toString() ?? '',
-      coursesTaughtIDs: (json['CoursesTaughtIDs'] as List? ?? []).map((item) => item as ObjectId).toList(),
+      coursesTaughtIDs: json['CoursesTaughtIDs'] as List<dynamic>,
       createdAt: DateTime.parse(json['CreatedAt']?.toString() ?? '1970-01-01T00:00:00Z'),
       createdBy: json['CreatedBy']?.toString() ?? '',
       isDeleted: json['IsDeleted'] as bool? ?? false,
       modifiedAt: DateTime.parse(json['ModifiedAt']?.toString() ?? '1970-01-01T00:00:00Z'),
       modifiedBy: json['ModifiedBy']?.toString() ?? '',
-      ratedBy: (json['RatedBy'] as List? ?? []).map((item) => item as ObjectId).toList(),
+      ratedBy: json['RatedBy'] as List<dynamic>,
       ratings: json['Ratings'] as List<dynamic>,
       totalRatings: json['TotalRatings'] as int
 
