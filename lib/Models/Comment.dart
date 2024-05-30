@@ -4,15 +4,14 @@ class Comment {
   final ObjectId id;
   final int erp;
   final String name;
-  final String? parentId; // Nullable because it can be null
+  final ObjectId? parentId; // Nullable because it can be null
   final String comment;
-  final List<dynamic> rating;
   final bool anonymous;
   final ObjectId teacherId;
-  final ObjectId courseId;
+  final ObjectId? courseId; // Make courseId nullable
   final int upVotes;
-  final List<dynamic> upVotedBy; // Using dynamic because the type is not specified
-  final List<dynamic> downVotedBy; // Using dynamic because the type is not specified
+  final List<ObjectId> upVotedBy; // Using dynamic because the type is not specified
+  final List<ObjectId> downVotedBy; // Using dynamic because the type is not specified
   final int downVotes;
   final String createdBy;
   final String modifiedBy;
@@ -27,10 +26,9 @@ class Comment {
     required this.name,
     this.parentId,
     required this.comment,
-    required this.rating,
     required this.anonymous,
     required this.teacherId,
-    required this.courseId,
+    this.courseId, // Nullable parameter
     required this.upVotes,
     required this.upVotedBy,
     required this.downVotedBy,
@@ -43,29 +41,26 @@ class Comment {
     // required this.version,
   });
 
-  // Factory constructor for creating a new FeedbackItem instance from a map
+  // Factory constructor for creating a new Comment instance from a map
   factory Comment.fromJson(Map<String, dynamic> json) {
     return Comment(
-      id: json['_id'] as ObjectId,
+      id: ObjectId.parse(json['_id'] as String),  // Convert String to ObjectId
       erp: json['erp'] as int,
       name: json['name'] as String,
-      parentId: json['parent_id'] as String?,
+      parentId: json['parent_id'] != null ? ObjectId.parse(json['parent_id'] as String) : null,  // Handle nullable ObjectId
       comment: json['comment'] as String,
-      rating: List<dynamic>.from(json['rating'] as List),
       anonymous: json['anonymous'] as bool,
-      teacherId: json['teacher_id'] as ObjectId,
-      courseId: json['course_id'] as ObjectId,
+      teacherId: ObjectId.parse(json['teacher_id'] as String),  // Convert String to ObjectId
+      courseId: json['course_id'] != null ? ObjectId.parse(json['course_id'] as String) : null,  // Handle nullable ObjectId
       upVotes: json['upvotes'] as int,
-      upVotedBy: json['upvotedBy'] as List<dynamic>,
-      downVotedBy: json['downvotedBy'] as List<dynamic>,
+      upVotedBy: json['upvotedBy'] != null ? List<ObjectId>.from(json['upvotedBy'].map((id) => ObjectId.parse(id as String))) : [],  // Provide default empty list if null
+      downVotedBy: json['downvotedBy'] != null ? List<ObjectId>.from(json['downvotedBy'].map((id) => ObjectId.parse(id as String))) : [],  // Provide default empty list if null
       downVotes: json['downvotes'] as int,
       createdBy: json['createdby'] as String,
       modifiedBy: json['modifiedby'] as String,
-      createdAt: json['createdat'] ,
-      modifiedAt: json['modifiedat'],
+      createdAt: DateTime.parse(json['createdat']),
+      modifiedAt: DateTime.parse(json['modifiedat']),
       isDeleted: json['isDeleted'] as bool,
     );
   }
-
-
 }
