@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/cupertino.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:buttons_tabbar/buttons_tabbar.dart';
 import '../Providers/CommentProvider.dart';
 import '../constants.dart'; // Make sure this path is correct
 import 'package:faculty_review/Providers/TeacherProvider.dart';
 import 'package:faculty_review/Models/Teacher.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:buttons_tabbar/buttons_tabbar.dart';
 
 class TeacherPage extends ConsumerStatefulWidget {
   final String email;
@@ -22,10 +22,12 @@ class TeacherPage extends ConsumerStatefulWidget {
   TeacherPageState createState() => TeacherPageState();
 }
 
-
-class TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProviderStateMixin {
+class TeacherPageState extends ConsumerState<TeacherPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Teacher? teacher;
+  final TextEditingController _commentController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +37,7 @@ class TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProvi
   @override
   void dispose() {
     _tabController.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
@@ -46,260 +49,222 @@ class TeacherPageState extends ConsumerState<TeacherPage> with SingleTickerProvi
       appBar: AppBar(
         title: const Text('Teacher Details'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            teachersAsyncValue.when(
-              data: (teachers) {
-                for (final t in teachers) {
-                  if (t.email == widget.email) {
-                    teacher = t;
-                    break;
-                  }
-                }
+      body: teachersAsyncValue.when(
+        data: (teachers) {
+          teacher = teachers.firstWhere((t) => t.email == widget.email);
 
-                if (teacher != null) {
-                  Uint8List bytes = Uint8List(0);
-                  try {
-                    bytes = base64Decode(teacher!.imageFile);
-                  } catch (e) {
-                    // Handle error or use a placeholder image
-                  }
+          if (teacher == null) {
+            return const Center(child: Text('Teacher not found'));
+          }
 
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Image.memory(bytes, fit: BoxFit.cover),
-                          ),
-                          Expanded(
-                            flex: 5,
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    margin: const EdgeInsets.only(bottom: 10),
-                                    child: Text(teacher!.name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 22,
-                                            color: brownColor)),
-                                  ),
-                                  Row(
-                                    children: [
-                                      const Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Attendance: ',
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                          ),
-                                          Text(
-                                            'Grading: ',
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                          ),
-                                          Text(
-                                            'Workload: ',
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                          ),
-                                          Text(
-                                            'Learning: ',
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          RatingBarIndicator(
-                                            rating: teacher!.ratings[0].toDouble(),
-                                            itemBuilder: (context, index) => const Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
-                                            ),
-                                            itemCount: 5,
-                                            itemSize: 20.0,
-                                          ),
-                                          RatingBarIndicator(
-                                            rating: teacher!.ratings[1].toDouble(),
-                                            itemBuilder: (context, index) => const Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
-                                            ),
-                                            itemCount: 5,
-                                            itemSize: 20.0,
-                                          ),
-                                          RatingBarIndicator(
-                                            rating: teacher!.ratings[2].toDouble(),
-                                            itemBuilder: (context, index) => const Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
-                                            ),
-                                            itemCount: 5,
-                                            itemSize: 20.0,
-                                          ),
-                                          RatingBarIndicator(
-                                            rating: teacher!.ratings[3].toDouble(),
-                                            itemBuilder: (context, index) => const Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
-                                            ),
-                                            itemCount: 5,
-                                            itemSize: 20.0,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Text("Total Ratings: ${teacher!.totalRatings}"),
-                                ],
-                              ),
+          Uint8List bytes;
+          try {
+            bytes = base64Decode(teacher!.imageFile);
+          } catch (e) {
+            bytes = Uint8List(0); // Handle error or use a placeholder image
+          }
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Image.memory(bytes, fit: BoxFit.cover),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  teacher!.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22,
+                                      color: brownColor),
+                                ),
+                                const SizedBox(height: 10),
+                                _buildRatings(),
+                                const SizedBox(height: 10),
+                                Text("Total Ratings: ${teacher!.totalRatings}"),
+                              ],
                             ),
                           ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    ButtonsTabBar(
+                      controller: _tabController,
+                      backgroundColor: Colors.blue,
+                      unselectedBackgroundColor: Colors.grey[300],
+                      unselectedLabelStyle: const TextStyle(
+                          color: Colors.black),
+                      labelStyle: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                      tabs: const [
+                        Tab(text: "Overview"),
+                        Tab(text: "Courses Taught"),
+                        Tab(text: "Details"),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 300,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          Center(child: Text(teacher!.overview)),
+                          ListView.builder(
+                            itemCount: teacher!.coursesTaught.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return ListTile(
+                                title: Text(teacher!.coursesTaught[index]),
+                              );
+                            },
+                          ),
+                          Center(child: Text(teacher!.toString())),
                         ],
                       ),
-                      // Column(
-                      //   children: [
-                      //     Text(teacher!.title),
-                      //     Text("Email: ${teacher!.email}"),
-                      //     Text("Department: ${teacher!.department}"),
-                      //     Text("Specialization: ${teacher!.specialization}"),
-                      //     Text("Onboard Status: ${teacher!.onboardStatus}"),
-                      //   ],
-                      // ),
-                    ],
-                  );
-                } else {
-                  return const Center(child: Text('Teacher not found'));
-                }
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(child: Text('Error: $error')),
-            ),
-            ButtonsTabBar(
-              controller: _tabController,
-              backgroundColor: Colors.blue,
-              unselectedBackgroundColor: Colors.grey[300],
-              unselectedLabelStyle: const TextStyle(color: Colors.black),
-              labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              tabs: const [
-                Tab(text: "Overview"),
-                Tab(text: "Courses Taught"),
-                Tab(text: "Details"),
-              ],
-            ),
-            SizedBox(
-              height: 300,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Center(child: Text(teacher!.overview)),
-                  Center(
-                    child: ListView.builder(
-                 itemCount: teacher!.coursesTaught.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          title: Text(teacher!.coursesTaught[index]),
-                        );
-                      },
                     ),
-                  ),
-                  Center(child: Text(teacher!.toString())),
-                ],
+                    _buildComments(),
+                  ],
+                ),
               ),
-            ),
-        Consumer(
-        builder: (context, ref, child) {
-      // Assuming teacherId is a String, convert it if necessary
-      final commentsAsyncValue = ref.watch(commentProvider(teacher!.id));
-
-      return commentsAsyncValue.when(
-          data: (comments) {
-        return ListView.builder(
-          shrinkWrap: true, // Important to prevent infinite height
-          physics: NeverScrollableScrollPhysics(), // Disable scrolling within the ListView
-          itemCount: comments.length,
-          itemBuilder: (context, index) {
-            final comment = comments[index];
-            print(comment.toString());
-            return ListTile(
-              title: Text(comment.comment),
-              subtitle: Text('By: ${comment.name}'),
-            );
-          },
-        );}, error: (Object error, StackTrace stackTrace) {
-            print(error);
-           return Text("Error");
-      }, loading: () {
-            return Text("Loading");
-      });})
-          ],
-        ),
+              _buildCommentInput(teacher!.id),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(child: Text('Error: $error')),
       ),
     );
   }
-}
 
-class CommentForm extends StatefulWidget {
-  const CommentForm({super.key});
+  Widget _buildRatings() {
+    return Row(
+      children: [
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Attendance: ',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            Text(
+              'Grading: ',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            Text(
+              'Workload: ',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            Text(
+              'Learning: ',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+          ],
+        ),
+        Column(
+          children: [
+            _buildRatingBar(teacher!.ratings[0].toDouble()),
+            _buildRatingBar(teacher!.ratings[1].toDouble()),
+            _buildRatingBar(teacher!.ratings[2].toDouble()),
+            _buildRatingBar(teacher!.ratings[3].toDouble()),
+          ],
+        ),
+      ],
+    );
+  }
 
-  @override
-  CommentFormState createState() => CommentFormState();
-}
-
-class CommentFormState extends State<CommentForm> {
-  final _formKey = GlobalKey<FormState>();
-  String _review = '';
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+  Widget _buildRatingBar(double rating) {
+    return RatingBarIndicator(
+      rating: rating,
+      itemBuilder: (context, index) =>
+      const Icon(
+        Icons.star,
+        color: Colors.amber,
       ),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Form(
-            key: _formKey,
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextFormField(
-                    style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold),
-                    decoration: const InputDecoration(
-                      hintText: "Post a Review",
-                      hintStyle: TextStyle(
-                          color: Colors.black,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold),
-                      border: OutlineInputBorder(),
-                    ),
-                    onSaved: (value) => _review = value ?? '',
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? 'Please enter a review'
-                        : null,
-                  ),
-                ),
-                IconButton(
+      itemCount: 5,
+      itemSize: 20.0,
+    );
+  }
+
+  Widget _buildComments() {
+    return Consumer(builder: (context, ref, child) {
+      final commentsAsyncValue = ref.watch(commentProvider(teacher!.id));
+      print('Comments provider state: $commentsAsyncValue');
+      return commentsAsyncValue.when(
+        data: (comments) {
+          if (comments.isEmpty) {
+            return const Center(child: Text('No comments available.'));
+          }
+          return ListView.builder(
+            shrinkWrap: true,
+            // Important to prevent infinite height
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: comments.length,
+            itemBuilder: (context, index) {
+              print('Comment: ${comments[index].comment}');
+              final comment = comments[index];
+              return ListTile(
+                title: Text(comment.comment),
+                subtitle: Text('By: ${comment.name}'),
+              );
+            },
+          );
+        },
+        error: (Object error, StackTrace stackTrace) {
+          return const Text("Error");
+        },
+        loading: () {
+          return const Text("Loading");
+        },
+      );
+    });
+  }
+
+  Widget _buildCommentInput(String teacherId) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final postComment = ref.watch(postCommentProvider);
+
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                hintText: "Enter your comment here...",
+                suffixIcon: IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      // Add logic to post the review
+                  onPressed: () async {
+                    final commentText = _commentController.text;
+                    if (commentText.isNotEmpty) {
+                      // Ensure postComment is awaited
+                      _commentController.clear();
+                      await postComment(commentText, teacherId);
+                      // Refresh comments after posting
+                      ref.refresh(commentProvider(teacherId));
                     }
                   },
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

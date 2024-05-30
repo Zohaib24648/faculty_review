@@ -1,232 +1,176 @@
-import 'package:faculty_review/Screens/LoginPage.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../constants.dart';
-class RegisterPage extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import '../Providers/RegistrationProviders.dart';
+import 'LoginPage.dart';
+import 'package:faculty_review/constants.dart';
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  RegisterPageState createState() => RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class RegisterPageState extends ConsumerState<RegisterPage> {
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+  late TextEditingController confirmPasswordController;
+  late TextEditingController firstNameController;
+  late TextEditingController lastNameController;
+  late TextEditingController erpController;
 
-  bool _obscureText = true;
-
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscureText = !_obscureText;
-    });
-
-
+  @override
+  void initState() {
+    super.initState();
+    emailController = ref.read(emailControllerProvider);
+    passwordController = ref.read(passwordControllerProvider);
+    confirmPasswordController = ref.read(confirmPasswordControllerProvider);
+    firstNameController = ref.read(firstNameControllerProvider);
+    lastNameController = ref.read(lastNameControllerProvider);
+    erpController = ref.read(erpControllerProvider);
   }
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
+    erpController.dispose();
+    super.dispose();
+  }
+
+  void togglePasswordVisibility() {
+    ref.read(obscureTextProvider.notifier).state = !ref.read(obscureTextProvider);
+  }
+
+  void registerUser() async {
+    if (passwordController.text != confirmPasswordController.text) {
+      ref.read(errorMessageProvider.notifier).state = "Passwords do not match";
+      return;
+    }
+
+    ref.watch(submissionStateProvider.notifier).state = SubmissionState.submitting;
+    final uri = Uri.parse('$baseUrl/api/users/register');
+    print(uri.toString());
+
+    try {
+      var dioInstance = Dio();
+      final response = await dioInstance.post(
+        uri.toString(),
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
+        data: jsonEncode({
+          "email": emailController.text,
+          "password": passwordController.text,
+          "firstname": firstNameController.text,
+          "lastname": lastNameController.text,
+          "erp": erpController.text  // Include ERP from user input
+        }),
+      );
+
+      if (mounted) {
+        if (response.statusCode == 200) {
+          ref.read(submissionStateProvider.notifier).state = SubmissionState.success;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        } else {
+          ref.read(submissionStateProvider.notifier).state = SubmissionState.error;
+          ref.read(errorMessageProvider.notifier).state = "Failed to register: ${response.data['msg']}";
+          print(response.data['msg']);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ref.read(submissionStateProvider.notifier).state = SubmissionState.error;
+        ref.read(errorMessageProvider.notifier).state = "Failed to connect to the server: ${e.toString()}";
+        print(e.toString());
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final maxWidth = deviceWidth > 600 ? 600.0 : deviceWidth *
-        0.95; // Define a maximum width for the content
+    final obscureText = ref.watch(obscureTextProvider);
+    final errorMessage = ref.watch(errorMessageProvider);
+
     return Scaffold(
-
-      appBar:  const CustomAppBar(title: "AcademiQ"),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: SizedBox(
-                width: maxWidth,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Image.asset(
-                        'assets/images/ibalogo.png',
-                        width: deviceWidth > 600 ? 600 : deviceWidth * 0.8,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          shape: BoxShape.rectangle,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1,
-                          ),
-                        ),
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                            hintText: "Erp or Email",
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff700f1a), width: 5,),
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)),
-                            ),
-                          ),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: GoogleFonts
-                                .spaceMono()
-                                .fontFamily,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          shape: BoxShape.rectangle,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1,
-                          ),
-                        ),
-                        child: TextFormField(
-                          obscureText: _obscureText,
-                          decoration: InputDecoration(
-                            hintText: "Enter your Password",
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff700f1a), width: 5,),
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                  _obscureText ? Icons.visibility_off : Icons
-                                      .visibility),
-                              onPressed: _togglePasswordVisibility,
-                            ),
-                          ),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: GoogleFonts
-                                .spaceMono()
-                                .fontFamily,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          shape: BoxShape.rectangle,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 1,
-                          ),
-                        ),
-                        child: TextFormField(
-                          obscureText: _obscureText,
-                          decoration: InputDecoration(
-                            hintText: "Confirm your Password",
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xff700f1a), width: 5,),
-                              borderRadius: BorderRadius.all(
-                                  Radius.circular(10)),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                  _obscureText ? Icons.visibility_off : Icons
-                                      .visibility),
-                              onPressed: _togglePasswordVisibility,
-                            ),
-                          ),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: GoogleFonts
-                                .spaceMono()
-                                .fontFamily,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xff700f1a),
-                                padding: const EdgeInsets.all(10),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text(
-                                'Register',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextButton (onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
-                      );
-                    },
-
-                      child: const Text
-                        ('Already Have an account? Login.', style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),),),
-                  ],
+      appBar: AppBar(title: const Text("Register")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: erpController,
+              decoration: const InputDecoration(labelText: 'ERP'),
+            ),
+            TextField(
+              controller: passwordController,
+              obscureText: obscureText,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                suffixIcon: IconButton(
+                  icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
+                  onPressed: togglePasswordVisibility,
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: Text(
-                'Dev by: Zohaib Mughal',
+            TextField(
+              controller: confirmPasswordController,
+              obscureText: obscureText,
+              decoration: InputDecoration(
+                labelText: 'Confirm Password',
+                suffixIcon: IconButton(
+                  icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
+                  onPressed: togglePasswordVisibility,
+                ),
+              ),
+            ),
+            TextField(
+              controller: firstNameController,
+              decoration: const InputDecoration(labelText: 'First Name'),
+            ),
+            TextField(
+              controller: lastNameController,
+              decoration: const InputDecoration(labelText: 'Last Name'),
+            ),
+            if (errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Text(errorMessage, style: const TextStyle(color: Colors.red, fontSize: 14)),
+              ),
+            ElevatedButton(
+              onPressed: registerUser,
+              child: const Text('Register'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+              child: const Text(
+                'Already Registered? Login',
                 style: TextStyle(
-                  fontFamily: GoogleFonts
-                      .roboto()
-                      .fontFamily,
-                  fontSize: 15,
                   color: Colors.black,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-      backgroundColor: const Color(0xffffffff),
     );
   }
-
 }
