@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:faculty_review/Providers/TeacherProvider.dart';
-import '../Models/Teacher.dart';
+import 'package:faculty_review/Models/Teacher.dart';
 import 'TeacherPage.dart';
 
 class TeachersTab extends ConsumerStatefulWidget {

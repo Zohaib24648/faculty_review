@@ -117,6 +117,7 @@ class _PostPageState extends ConsumerState<PostPage> {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: commentIds.length,
       itemBuilder: (context, index) {
+        print(commentIds[index]);
         final commentId = commentIds[index];
         final commentAsyncValue = ref.watch(commentProvider(commentId));
         return commentAsyncValue.when(

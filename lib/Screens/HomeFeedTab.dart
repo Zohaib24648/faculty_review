@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../Models/Post.dart';
-import '../Providers/PostsProvider.dart';
+import 'package:faculty_review/Models/Post.dart';
+import 'package:faculty_review/Providers/PostsProvider.dart';
 import 'PostPage.dart';
 
 class HomeFeed extends ConsumerWidget {

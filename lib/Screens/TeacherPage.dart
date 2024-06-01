@@ -261,7 +261,7 @@ class TeacherPageState extends ConsumerState<TeacherPage>
                     if (commentText.isNotEmpty) {
                       // Ensure postComment is awaited
                       _commentController.clear();
-                      await postComment(commentText, teacherId);
+                      await postComment(  teacherId,commentText);
                       // Refresh comments after posting
                       ref.refresh(commentsProvider(teacherId));
                     }

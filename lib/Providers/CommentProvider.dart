@@ -1,8 +1,7 @@
 import 'package:faculty_review/Providers/token_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../Models/Post.dart';
-import '../Services/api_service.dart';
-import '../models/comment.dart';
+import 'package:faculty_review/Models/Comment.dart';
+import 'package:faculty_review/Services/api_service.dart';
 
 final apiServiceProvider = Provider<ApiService>((ref) {
   final dio = ref.read(dioProvider); // Ensure you have a dioProvider that supplies Dio instance
@@ -14,7 +13,6 @@ final commentsProvider = FutureProvider.family<List<Comment>, String>((ref, teac
   return await apiService.getCommentsByTeacher(teacherId);
 });
 
-
 final commentProvider = FutureProvider.family<Comment, String>((ref, commentId) async {
   final apiService = ref.read(apiServiceProvider);
   return await apiService.fetchCommentById(commentId);
@@ -25,13 +23,4 @@ final postCommentProvider = Provider<Future<bool> Function(String, String, {Stri
   return (String teacherId, String comment, {String? parentId}) async {
     return await apiService.postComment(teacherId, comment, parentId: parentId);
   };
-
-
 });
-
-final postProvider = FutureProvider.family<Post, String>((ref, postId) async {
-final apiService = ref.read(apiServiceProvider);
-return await apiService.fetchPostById(postId);
-}
-
-);
