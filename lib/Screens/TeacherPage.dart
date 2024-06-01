@@ -11,10 +11,10 @@ import 'package:faculty_review/Providers/TeacherProvider.dart';
 import 'package:faculty_review/Models/Teacher.dart';
 
 class TeacherPage extends ConsumerStatefulWidget {
-  final String email;
+  final String name;
 
   const TeacherPage({
-    required this.email,
+    required this.name,
     super.key,
   });
 
@@ -51,8 +51,7 @@ class TeacherPageState extends ConsumerState<TeacherPage>
       ),
       body: teachersAsyncValue.when(
         data: (teachers) {
-          teacher = teachers.firstWhere((t) => t.email == widget.email);
-
+          teacher = teachers.firstWhere((t) => t.name == widget.name);
           if (teacher == null) {
             return const Center(child: Text('Teacher not found'));
           }
@@ -92,7 +91,7 @@ class TeacherPageState extends ConsumerState<TeacherPage>
                                 const SizedBox(height: 10),
                                 _buildRatings(),
                                 const SizedBox(height: 10),
-                                Text("Total Ratings: ${teacher!.totalRatings}"),
+                                // Text("Total Ratings: ${teacher!.totalRatings}"),
                               ],
                             ),
                           ),
@@ -123,12 +122,22 @@ class TeacherPageState extends ConsumerState<TeacherPage>
                           ListView.builder(
                             itemCount: teacher!.coursesTaught.length,
                             itemBuilder: (BuildContext context, int index) {
+
                               return ListTile(
                                 title: Text(teacher!.coursesTaught[index]),
                               );
                             },
                           ),
-                          Center(child: Text(teacher!.toString())),
+                          Column(
+                            children: [
+                              Text(teacher!.name.toString()),
+                              Text(teacher!.email.toString()),
+                              Text(teacher!.title.toString()),
+                              Text(teacher!.department.toString()),
+                              Text(teacher!.specialization.toString()),
+                              Text(teacher!.onboardStatus.toString()),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -174,14 +183,14 @@ class TeacherPageState extends ConsumerState<TeacherPage>
             ),
           ],
         ),
-        Column(
-          children: [
-            _buildRatingBar(teacher!.ratings[0].toDouble()),
-            _buildRatingBar(teacher!.ratings[1].toDouble()),
-            _buildRatingBar(teacher!.ratings[2].toDouble()),
-            _buildRatingBar(teacher!.ratings[3].toDouble()),
-          ],
-        ),
+        // Column(
+        //   children: [
+        //     _buildRatingBar(teacher!.ratings[0].toDouble()),
+        //     _buildRatingBar(teacher!.ratings[1].toDouble()),
+        //     _buildRatingBar(teacher!.ratings[2].toDouble()),
+        //     _buildRatingBar(teacher!.ratings[3].toDouble()),
+        //   ],
+        // ),
       ],
     );
   }
@@ -201,8 +210,7 @@ class TeacherPageState extends ConsumerState<TeacherPage>
 
   Widget _buildComments() {
     return Consumer(builder: (context, ref, child) {
-      final commentsAsyncValue = ref.watch(commentProvider(teacher!.id));
-      print('Comments provider state: $commentsAsyncValue');
+      final commentsAsyncValue = ref.watch(commentsProvider(teacher!.id));
       return commentsAsyncValue.when(
         data: (comments) {
           if (comments.isEmpty) {
@@ -214,7 +222,6 @@ class TeacherPageState extends ConsumerState<TeacherPage>
             physics: const NeverScrollableScrollPhysics(),
             itemCount: comments.length,
             itemBuilder: (context, index) {
-              print('Comment: ${comments[index].comment}');
               final comment = comments[index];
               return ListTile(
                 title: Text(comment.comment),
@@ -256,7 +263,7 @@ class TeacherPageState extends ConsumerState<TeacherPage>
                       _commentController.clear();
                       await postComment(commentText, teacherId);
                       // Refresh comments after posting
-                      ref.refresh(commentProvider(teacherId));
+                      ref.refresh(commentsProvider(teacherId));
                     }
                   },
                 ),

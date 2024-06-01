@@ -1,3 +1,4 @@
+import 'package:faculty_review/Screens/HomeFeedTab.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'TeachersTab.dart';
@@ -37,7 +38,7 @@ class HomePage extends StatelessWidget {
           children: [
             // HomeFeedTab(),
             const TeachersTab(),
-            Container(),
+            HomeFeed(),
             Container(),
             // CoursesTab(),
           ],
