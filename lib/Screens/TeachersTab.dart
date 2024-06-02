@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:faculty_review/Providers/TeacherProvider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:faculty_review/Models/Teacher.dart';
+import 'package:faculty_review/Providers/TeacherProvider.dart';
 import 'TeacherPage.dart';
 
 class TeachersTab extends ConsumerStatefulWidget {
@@ -21,26 +21,21 @@ class _TeachersTabState extends ConsumerState<TeachersTab> {
     final teachersAsyncValue = ref.watch(teachersProvider);
 
     return Column(
-      children: <Widget>[
+      children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Search(
-            onChanged: (value) {
-              setState(() {
-                search = value;
-              });
-            },
+            onChanged: (value) => setState(() => search = value),
           ),
         ),
         Expanded(
           child: teachersAsyncValue.when(
             data: (teachers) {
-              List<Teacher> filteredTeachers = teachers.where((teacher) {
-                return teacher.name.toLowerCase().contains(search.toLowerCase());
-              }).toList();
-
+              List<Teacher> filteredTeachers = teachers
+                  .where((teacher) => teacher.name.toLowerCase().contains(search.toLowerCase()))
+                  .toList();
               return CustomScrollView(
-                slivers: <Widget>[
+                slivers: [
                   SliverGrid(
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
@@ -49,15 +44,9 @@ class _TeachersTabState extends ConsumerState<TeachersTab> {
                       childAspectRatio: 3 / 5,
                     ),
                     delegate: SliverChildBuilderDelegate(
-                          (BuildContext context, int index) {
+                          (context, index) {
                         var teacher = filteredTeachers[index];
-                        return TeacherCard(
-                          name: teacher.name,
-                          title: teacher.title,
-                          base64Image: teacher.imageFile,
-                          email: teacher.email,
-                          id: teacher.id,
-                        );
+                        return TeacherCard(teacher: teacher);
                       },
                       childCount: filteredTeachers.length,
                     ),
@@ -75,28 +64,20 @@ class _TeachersTabState extends ConsumerState<TeachersTab> {
 }
 
 class TeacherCard extends StatelessWidget {
-  final String base64Image;
-  final String email;
-  final String name;
-  final String title;
-  final String id;
+  final Teacher teacher;
 
   const TeacherCard({
-    required this.base64Image,
-    required this.email,
-    required this.name,
-    required this.title,
-    required this.id,
+    required this.teacher,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    Uint8List bytes;
+    Uint8List bytes = Uint8List(0); // Placeholder for an empty image
     try {
-      bytes = base64Decode(base64Image);
+      bytes = base64Decode(teacher.imageFile);
     } catch (e) {
-      bytes = Uint8List(0); // Placeholder for an empty image
+      // Handle possible base64 decode errors gracefully
     }
 
     return InkWell(
@@ -104,7 +85,7 @@ class TeacherCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TeacherPage(name: name),
+            builder: (context) => TeacherPage(name: teacher.name),
           ),
         );
       },
@@ -114,7 +95,7 @@ class TeacherCard extends StatelessWidget {
         surfaceTintColor: Colors.white,
         elevation: 4,
         child: Column(
-          children: <Widget>[
+          children: [
             Expanded(
               flex: 3,
               child: Image.memory(bytes, fit: BoxFit.fill),
@@ -123,9 +104,9 @@ class TeacherCard extends StatelessWidget {
               flex: 1,
               child: Column(
                 children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  Text(email, style: const TextStyle(color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(teacher.name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(teacher.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(teacher.email, style: const TextStyle(color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
@@ -163,7 +144,7 @@ class Search extends StatelessWidget {
           border: InputBorder.none,
           hintText: "Search",
           hintStyle: TextStyle(color: Colors.grey),
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20,vertical: 15),
         ),
       ),
     );

@@ -3,6 +3,9 @@ import 'package:faculty_review/Models/Post.dart';
 import 'package:faculty_review/Models/Comment.dart';
 import 'package:faculty_review/constants.dart';
 
+import '../Models/UserProfile.dart';
+import '../Providers/token_notifier.dart';
+
 class ApiService {
   final Dio dio;
 
@@ -82,6 +85,19 @@ class ApiService {
       throw Exception('Failed to load posts');
     }
   }
+
+
+
+  Future<UserProfile> getUserProfile() async {
+    try {
+      final response = await dio.get('$baseUrl/api/users/getuserprofile');
+      return UserProfile.fromJson(response.data);
+    } on DioError catch (e) {
+      throw Exception('Failed to fetch user profile: ${e.message}');
+    }
+  }
+
+
   Future<Comment> fetchCommentById(String commentId) async {
     try {
       final response = await dio.post('$baseUrl/api/comments/getcommentbyid', data: {'commentId': commentId});

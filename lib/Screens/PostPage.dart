@@ -4,7 +4,6 @@ import 'package:faculty_review/Models/Post.dart';
 import 'package:faculty_review/Models/Comment.dart';
 import 'package:faculty_review/Providers/CommentProvider.dart';
 import 'package:faculty_review/Providers/PostsProvider.dart';
-import 'package:faculty_review/Services/api_service.dart';
 
 
 class PostPage extends ConsumerStatefulWidget {
@@ -80,19 +79,19 @@ class _PostPageState extends ConsumerState<PostPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                if (post.attachments.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Attachments", style: TextStyle(fontWeight: FontWeight.bold)),
-                        Column(
-                          children: post.attachments.map((attachment) => Image.network(attachment)).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
+                // if (post.attachments.isNotEmpty)
+                //   Padding(
+                //     padding: const EdgeInsets.all(8.0),
+                //     child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         const Text("Attachments", style: TextStyle(fontWeight: FontWeight.bold)),
+                //         Column(
+                //           children: post.attachments.map((attachment) => Image.network(attachment)).toList(),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
                 _buildCommentsSection(post.comments),
                 _buildCommentInput(post.id),
               ],

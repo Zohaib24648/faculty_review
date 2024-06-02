@@ -28,20 +28,17 @@ class HomeFeed extends ConsumerWidget {
       itemCount: posts.length,
       itemBuilder: (context, index) {
         final post = posts[index];
-        final id = post.id;
         return Card(
           margin: const EdgeInsets.all(8.0),
-          child: ListTile(onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PostPage(postId: id), // Ensure this matches the parameter expected by PostPage
-              ),
-            );
-          },
-            // leading: post.attachments.isNotEmpty
-            //     ? Image.network(post.attachments[0], width: 100, fit: BoxFit.cover)
-            //     : const SizedBox(width: 100, child: Center(child: Icon(Icons.image_not_supported))),
+          child: ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PostPage(postId: post.id),
+                ),
+              );
+            },
             title: Text(post.title),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
