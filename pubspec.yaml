@@ -48,6 +48,7 @@ dependencies:
   sidebarx: ^0.17.1
   url_launcher: ^6.2.6
   eva_icons_flutter: ^3.1.0
+  timeago: ^3.6.1
 
 
 dev_dependencies:

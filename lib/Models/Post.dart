@@ -3,7 +3,6 @@ class Post {
   final String title;
   final String content;
   final String createdBy;
-  final List<String> tags;
   final int upvotes;
   final int downvotes;
   final List<String> upvotedBy;
@@ -20,7 +19,6 @@ class Post {
     required this.title,
     required this.content,
     required this.createdBy,
-    required this.tags,
     required this.upvotes,
     required this.downvotes,
     required this.upvotedBy,
@@ -30,7 +28,7 @@ class Post {
     required this.attachments,
     required this.comments,  // Adjusted type
     required this.createdAt,
-    required this.modifiedAt,
+    required this.modifiedAt, required anonymous,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -39,12 +37,12 @@ class Post {
       title: json['title'],
       content: json['content'],
       createdBy: json['createdBy'],
-      tags: List<String>.from(json['tags']),
       upvotes: json['upvotes'],
       downvotes: json['downvotes'],
       upvotedBy: List<String>.from(json['upvotedBy']),
       downvotedBy: List<String>.from(json['downvotedBy']),
       visibility: json['visibility'],
+      anonymous: json['anonymous'],
       isDeleted: json['isDeleted'],
       attachments: List<String>.from(json['attachments']),
       comments: List<String>.from(json['comments']),  // Directly using List<String>

@@ -1,3 +1,4 @@
+import 'package:faculty_review/Screens/LoginPage.dart';
 import 'package:faculty_review/Screens/user_profile_page.dart';
 import 'package:faculty_review/constants.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:faculty_review/Screens/HomePage.dart';
 import 'Developers_page.dart';
 import 'RegisterPage.dart';
+import 'package:faculty_review/Providers/token_notifier.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -28,14 +30,53 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     super.dispose();
   }
 
+  Future<void> _confirmLogout(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Are you sure you want to logout?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Logout'),
+              onPressed: () async {
+                await ref.read(tokenProvider.notifier).clearToken();
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                      (Route<dynamic> route) => false,
+                ); // Navigate to LoginPage and clear the stack
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _key,
       appBar: AppBar(
-        title: Text("AcademiQ"),
+        title: const Text("AcademiQ"),
         leading: IconButton(
-          icon: Icon(Icons.menu),
+          icon: const Icon(Icons.menu),
           onPressed: () => _key.currentState?.openDrawer(),
         ),
       ),
@@ -43,7 +84,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            SizedBox(
+            const SizedBox(
               height: 150, // Set the desired height here
               child: DrawerHeader(
                 decoration: BoxDecoration(
@@ -61,18 +102,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
               onTap: () {
                 _pageController.jumpToPage(0);
-                Navigator.pop(context); // Close the drawer
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.search),
-              title: Text('Search'),
-              onTap: () {
-                _pageController.jumpToPage(1);
                 Navigator.pop(context); // Close the drawer
               },
             ),
@@ -80,7 +113,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               leading: Icon(Icons.people),
               title: Text('UserProfile'),
               onTap: () {
-                _pageController.jumpToPage(2);
+                _pageController.jumpToPage(1);
                 Navigator.pop(context); // Close the drawer
               },
             ),
@@ -88,33 +121,28 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               leading: Icon(Icons.settings),
               title: Text('Author'),
               onTap: () {
-// move to this page : SupportTheAuthorPage
                 Navigator.pop(context); // Close the drawer
-                _pageController.jumpToPage(3);
-
-
-
+                _pageController.jumpToPage(2);
               },
             ),
             ListTile(
               leading: Icon(Icons.logout),
-              title: Text('Logout'),
-              onTap: () {
-                // Logout
-                Navigator.pop(context); // Close the drawer
+              title: const Text('Logout'),
+              onTap: () async {
+                await _confirmLogout(context);
               },
-            )
+            ),
           ],
         ),
       ),
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {},
-        children: [
+        children: const [
           HomePage(),
-          RegisterPage(),
           UserProfilePage(),
           SupportTheAuthorPage(),
+          LoginPage()
         ],
       ),
     );

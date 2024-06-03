@@ -18,11 +18,10 @@ class ApiService {
         data: {'teacher_id': teacherId},
       );
       return (response.data as List).map((json) => Comment.fromJson(json)).toList();
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       throw Exception('Failed to fetch comments: ${e.message}');
     }
   }
-
   Future<bool> postComment(String teacherId, String comment, {String? parentId}) async {
     try {
       final response = await dio.post(
@@ -36,7 +35,7 @@ class ApiService {
       );
       return response.statusCode == 201;
     } on DioException catch (e) {
-      throw Exception('Failed to post comment: ${e.message}');
+      return false;
     }
   }
 
@@ -51,7 +50,7 @@ class ApiService {
         },
       );
       return response.statusCode == 201;
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       throw Exception('Failed to post comment: ${e.message}');
     } catch (e) {
       throw Exception('Failed to post comment: ${e.toString()}');
@@ -69,6 +68,30 @@ class ApiService {
     } catch (e) {
       print('Error fetching post by ID: ${e.toString()}');
       throw Exception('Failed to load post due to an error: ${e.toString()}');
+    }
+  }
+
+  Future<bool> createPost({
+    required String title,
+    required String content,
+    required String visibility,
+    required bool anonymous,
+    List<String>? attachments,
+  }) async {
+    try {
+      const url = '$baseUrl/api/posts/createpost';
+      final response = await dio.post(url,
+        data: {
+          'title': title,
+          'content': content,
+          'visibility': visibility,
+          'anonymous': anonymous,
+          'attachments': attachments ?? [],
+        },
+      );
+      return response.statusCode == 201;
+    } on DioException catch (e) {
+      throw Exception('Failed to create post: ${e.message}');
     }
   }
 
@@ -92,7 +115,7 @@ class ApiService {
     try {
       final response = await dio.get('$baseUrl/api/users/getuserprofile');
       return UserProfile.fromJson(response.data);
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       throw Exception('Failed to fetch user profile: ${e.message}');
     }
   }

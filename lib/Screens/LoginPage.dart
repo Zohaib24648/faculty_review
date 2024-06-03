@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:faculty_review/Screens/MainScree.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
@@ -27,9 +28,6 @@ class LoginPage extends ConsumerWidget {
       ref.read(submissionStateProvider.notifier).state = SubmissionState.submitting;
       final uri = Uri.parse('$baseUrl/api/users/login');
 
-      print("Attempting to log in with URI: $uri");
-      print("Username: ${loginUsernameController.text}, Password: ${passwordController.text}");
-
       try {
         var dioInstance = Dio();
         final response = await dioInstance.post(
@@ -43,28 +41,23 @@ class LoginPage extends ConsumerWidget {
           }),
         );
 
-        print("Response status code: ${response.statusCode}");
-        print("Response data: ${response.data}");
-
         if (response.statusCode == 200) {
           final token = response.data['token'];
           await ref.read(tokenProvider.notifier).setToken(token);
           ref.read(submissionStateProvider.notifier).state = SubmissionState.success;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
+            MaterialPageRoute(builder: (context) => const MainScreen()),
           );
         } else {
           ref.read(submissionStateProvider.notifier).state = SubmissionState.error;
-          ref.read(errorMessageProvider.notifier).state = "Failed to login: ${response.data['msg']}";
+          ref.read(errorMessageProvider.notifier).state = response.data['msg'] ?? "Unknown error occurred";
         }
       } catch (e) {
-        print("Error: $e");
         ref.read(submissionStateProvider.notifier).state = SubmissionState.error;
         ref.read(errorMessageProvider.notifier).state = "Failed to connect to the server: ${e.toString()}";
       }
     }
-
 
 
     final deviceWidth = MediaQuery.of(context).size.width;
@@ -72,10 +65,10 @@ class LoginPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: const CustomAppBar(title: "AcademiQ"),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
+      body: SingleChildScrollView( // This allows the column to be scrollable
+        child: Column(
+          children: [
+            Center(
               child: SizedBox(
                 width: maxWidth,
                 child: Column(
@@ -152,11 +145,11 @@ class LoginPage extends ConsumerWidget {
                       ),
                     ),
                     if (errorMessage.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
                         child: Text(
-                          errorMessage,
-                          style: const TextStyle(color: Colors.red, fontSize: 14),
+                          'Please Check Your Email and Password',
+                          style: TextStyle(color: Colors.red, fontSize: 14),
                         ),
                       ),
                     Row(
@@ -165,7 +158,11 @@ class LoginPage extends ConsumerWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: ElevatedButton(
-                              onPressed: loginUser,
+                              onPressed:(() async {
+                                await loginUser();
+                                ref.read(errorMessageProvider.notifier).state = ''; // Clear the error message
+
+                              }),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xff700f1a),
                                 padding: const EdgeInsets.all(10),
@@ -206,24 +203,11 @@ class LoginPage extends ConsumerWidget {
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: Text(
-                'Dev by: Zohaib Mughal',
-                style: TextStyle(
-                  fontFamily: GoogleFonts.roboto().fontFamily,
-                  fontSize: 15,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
       backgroundColor: const Color(0xffffffff),
     );
+
   }
 }

@@ -12,12 +12,9 @@ class HomeFeed extends ConsumerWidget {
     final postsAsyncValue = ref.watch(postsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HomeFeed'),
-      ),
       body: postsAsyncValue.when(
         data: (posts) => _buildPostsList(posts),
-        loading: () => const CircularProgressIndicator(),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Text('Error: $error'),
       ),
     );
@@ -28,41 +25,95 @@ class HomeFeed extends ConsumerWidget {
       itemCount: posts.length,
       itemBuilder: (context, index) {
         final post = posts[index];
-        return Card(
-          margin: const EdgeInsets.all(8.0),
-          child: ListTile(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PostPage(postId: post.id),
-                ),
-              );
-            },
-            title: Text(post.title),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(post.content),
-                const SizedBox(height: 10),
-                Text('By ${post.createdBy}'),
-                const SizedBox(height: 5),
-                Wrap(
-                  spacing: 8.0,
-                  children: post.tags.map((tag) => Chip(label: Text(tag))).toList(),
-                ),
-              ],
+        return InkWell(
+          onTap: () {
+            // Define what happens when the tile is tapped
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostPage(postId:post.id,),
+              ),
+            );
+          },
+          child: Card(
+            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
             ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.thumb_up, color: Colors.blue),
-                Text('${post.upvotes}'),
-                const Icon(Icons.thumb_down, color: Colors.red),
-                Text('${post.downvotes}'),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  Text(
+                    post.content,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'By: ${post.createdBy}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_upward),
+                        color: Colors.blue,
+                        onPressed: () {
+                          // Upvote logic
+                        },
+                      ),
+                      Text(
+                        '${post.upvotes}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_downward),
+                        color: Colors.red,
+                        onPressed: () {
+                          // Downvote logic
+                        },
+                      ),
+                      Text(
+                        '${post.downvotes}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextButton.icon(
+                        onPressed: () {
+                          // Comment logic
+                        },
+                        icon: const Icon(Icons.comment, size: 20),
+                        label: Text(post.comments.length.toString()),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          // Share logic
+                        },
+                        icon: const Icon(Icons.share, size: 20),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            isThreeLine: true,
           ),
         );
       },

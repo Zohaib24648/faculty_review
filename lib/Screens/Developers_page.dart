@@ -130,19 +130,19 @@ class SupportTheAuthorPage extends StatelessWidget {
               spacing: 10,
               children: [
                 IconButton(
-                  icon: Icon(EvaIcons.linkedin, size: 35),
+                  icon: Icon(EvaIcons.linkedin, size: 35,color: Color.fromARGB(255, 0, 119, 181),),
                   onPressed: () => _launchURL('https://www.linkedin.com/in/zohaibmughal24648/'),
                 ),
                 IconButton(
-                  icon: Icon(EvaIcons.facebook, size: 35),
+                  icon: Icon(EvaIcons.facebook, size: 35,color: Color.fromARGB(255, 24, 119, 242),),
                   onPressed: () => _launchURL('https://www.facebook.com/zohaibmughal2002/'),
                 ),
                 IconButton(
-                  icon: Icon(EvaIcons.twitter, size: 35),
+                  icon: Icon(EvaIcons.twitter, size: 35, color: Color.fromARGB(255, 29, 161, 242),),
                   onPressed: () => _launchURL('https://www.instagram.com/zohaib.rar/'),
                 ),
                 IconButton(
-                  icon: Icon(EvaIcons.github, size: 35),
+                  icon: Icon(EvaIcons.github, size: 35,color: Color.fromARGB(255, 0, 0, 0)),
                   onPressed: () => _launchURL('https://github.com/Zohaib24648'),
                 ),
               ],
