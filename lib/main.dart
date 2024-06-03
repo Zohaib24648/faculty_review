@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'Screens/HomePage.dart';
 import 'Screens/LoginPage.dart';
 import 'Providers/token_notifier.dart';
-
+import 'Screens/MainScree.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,14 +17,10 @@ class MyApp extends ConsumerWidget {
     final tokenNotifier = ref.read(tokenProvider.notifier);
 
     return MaterialApp(
-      title: 'AcademiQ',
-      theme: ThemeData(
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-        ),
-        primarySwatch: Colors.brown,
-      ),
+      // title: 'AcademiQ',
+      // theme: ThemeData(
+      //   primarySwatch: Colors.brown,
+      // ),
       home: FutureBuilder(
         future: tokenNotifier.initialized,
         builder: (context, snapshot) {
@@ -34,7 +29,7 @@ class MyApp extends ConsumerWidget {
           } else {
             final token = ref.watch(tokenProvider);
             if (token != null) {
-              return const HomePage();
+              return const MainScreen(); // Using MainScreen when logged in
             } else {
               return const LoginPage();
             }

@@ -1,4 +1,3 @@
-import 'package:mongo_dart/mongo_dart.dart';
 
 class Teacher {
   final String id;
@@ -7,63 +6,63 @@ class Teacher {
   final String email;
   final String overview;
   final List<String> coursesTaught;
+  final List<String> coursesTaughtIDs;
+  final List<String> ratedBy;
+  final List<dynamic> ratings;
+  final int totalRatings;
   final String department;
   final String specialization;
   final String onboardStatus;
   final String imageFile;
-  final List<String> coursesTaughtIDs;
-  final DateTime createdAt;
   final String createdBy;
-  final bool isDeleted;
-  final DateTime modifiedAt;
   final String modifiedBy;
-  final List<dynamic> ratedBy;
-  final List<int> ratings;
-  final int totalRatings;
+  final DateTime createdAt;
+  final DateTime modifiedAt;
+  final bool isDeleted;
 
   Teacher({
     required this.id,
     required this.name,
-    required this.title,
-    required this.email,
-    required this.overview,
-    required this.coursesTaught,
-    required this.department,
-    required this.specialization,
-    required this.onboardStatus,
-    required this.imageFile,
-    required this.coursesTaughtIDs,
+    this.title = 'Instructor',
+    this.email = '',
+    this.overview = '',
+    this.coursesTaught = const [],
+    this.coursesTaughtIDs = const [],
+    this.ratedBy = const [],
+    this.ratings = const [0.0, 0.0, 0.0, 0.0],
+    this.totalRatings = 0,
+    this.department = '',
+    this.specialization = '',
+    this.onboardStatus = 'Available',
+    this.imageFile = '',
+    this.createdBy = '',
+    this.modifiedBy = '',
     required this.createdAt,
-    required this.createdBy,
-    required this.isDeleted,
     required this.modifiedAt,
-    required this.modifiedBy,
-    required this.ratedBy,
-    required this.ratings,
-    required this.totalRatings,
+    this.isDeleted = false,
   });
 
   factory Teacher.fromJson(Map<String, dynamic> json) {
     return Teacher(
-      id: json['_id'].toString(), // Convert ObjectId to string
-      name: json['Name']?.toString() ?? '', // Ensure value is converted to String
-      title: json['Title']?.toString() ?? '',
-      email: json['Email']?.toString() ?? '',
-      overview: json['Overview']?.toString() ?? '',
-      coursesTaught: List<String>.from(json['CoursesTaught'] ?? []), // Convert to List<String>
-      department: json['Department']?.toString() ?? '',
-      specialization: json['Specialization']?.toString() ?? '',
-      onboardStatus: json['OnboardStatus']?.toString() ?? '',
-      imageFile: json['ImageFile']?.toString() ?? '',
-      coursesTaughtIDs: List<String>.from(json['CoursesTaughtIDs'] ?? []), // Convert to List<String>
-      createdAt: DateTime.parse(json['createdAt']?.toString() ?? '1970-01-01T00:00:00Z'),
-      createdBy: json['createdBy']?.toString() ?? '',
+      id: json['_id'] as String,
+      name: json['Name'] as String,
+      title: json['Title'] as String? ?? 'Instructor',
+      email: json['Email'] as String? ?? '',
+      overview: json['Overview'] as String? ?? '',
+      coursesTaught: (json['Courses Taught'] as List).map((item) => item as String).toList(),
+      coursesTaughtIDs: (json['CoursesTaughtIDs'] as List).map((item) => item as String).toList(),
+      ratedBy: (json['RatedBy'] as List).map((item) => item as String).toList(),
+      ratings: (json['Ratings'] as List).map((item) => item as dynamic).toList(),
+      totalRatings: json['TotalRatings'] as int? ?? 0,
+      department: json['Department'] as String? ?? '',
+      specialization: json['Specialization'] as String? ?? '',
+      onboardStatus: json['OnboardStatus'] as String? ?? 'Available',
+      imageFile: json['ImageFile'] as String? ?? '',
+      createdBy: json['createdBy'] as String? ?? '',
+      modifiedBy: json['modifiedBy'] as String? ?? '',
+      createdAt: json['createdAt'] == null ? DateTime.now() : DateTime.parse(json['createdAt']),
+      modifiedAt: json['modifiedAt'] == null ? DateTime.now() : DateTime.parse(json['modifiedAt']),
       isDeleted: json['isDeleted'] as bool? ?? false,
-      modifiedAt: DateTime.parse(json['modifiedAt']?.toString() ?? '1970-01-01T00:00:00Z'),
-      modifiedBy: json['modifiedBy']?.toString() ?? '',
-      ratedBy: json['RatedBy'] ?? [],
-      ratings: (json['Ratings'] as List<dynamic>).map((e) => (e is int) ? e : (e as num).toInt()).toList(), // Convert to List<int>
-      totalRatings: (json['TotalRatings'] is int) ? json['TotalRatings'] : (json['TotalRatings'] as num).toInt(), // Ensure int
     );
   }
 
@@ -74,20 +73,20 @@ class Teacher {
       'Title': title,
       'Email': email,
       'Overview': overview,
-      'CoursesTaught': coursesTaught,
+      'Courses Taught': coursesTaught,
+      'CoursesTaughtIDs': coursesTaughtIDs,
+      'RatedBy': ratedBy,
+      'Ratings': ratings,
+      'TotalRatings': totalRatings,
       'Department': department,
       'Specialization': specialization,
       'OnboardStatus': onboardStatus,
       'ImageFile': imageFile,
-      'CoursesTaughtIDs': coursesTaughtIDs,
-      'createdAt': createdAt.toIso8601String(),
       'createdBy': createdBy,
-      'isDeleted': isDeleted,
-      'modifiedAt': modifiedAt.toIso8601String(),
       'modifiedBy': modifiedBy,
-      'RatedBy': ratedBy,
-      'Ratings': ratings,
-      'TotalRatings': totalRatings,
+      'createdAt': createdAt.toIso8601String(),
+      'modifiedAt': modifiedAt.toIso8601String(),
+      'isDeleted': isDeleted,
     };
   }
 }

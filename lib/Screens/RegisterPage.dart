@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../Providers/RegistrationProviders.dart';
 import 'LoginPage.dart';
 import 'package:faculty_review/constants.dart';
+
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
@@ -19,6 +20,8 @@ class RegisterPageState extends ConsumerState<RegisterPage> {
   late TextEditingController firstNameController;
   late TextEditingController lastNameController;
   late TextEditingController erpController;
+  ValueNotifier<String?> passwordErrorNotifier = ValueNotifier(null);
+
 
   @override
   void initState() {
@@ -29,32 +32,44 @@ class RegisterPageState extends ConsumerState<RegisterPage> {
     firstNameController = ref.read(firstNameControllerProvider);
     lastNameController = ref.read(lastNameControllerProvider);
     erpController = ref.read(erpControllerProvider);
+
+    passwordController.addListener(checkPasswords);
+    confirmPasswordController.addListener(checkPasswords);
   }
 
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    firstNameController.dispose();
-    lastNameController.dispose();
-    erpController.dispose();
-    super.dispose();
+  void checkPasswords() {
+    if (passwordController.text != confirmPasswordController.text) {
+      passwordErrorNotifier.value = "Passwords do not match";
+    } else {
+      passwordErrorNotifier.value = null;
+    }
   }
+
+  // @override
+  // void dispose() {
+  //   emailController.dispose();
+  //   passwordController.dispose();
+  //   confirmPasswordController.dispose();
+  //   firstNameController.dispose();
+  //   lastNameController.dispose();
+  //   erpController.dispose();
+  //   passwordController.removeListener(checkPasswords);
+  //   confirmPasswordController.removeListener(checkPasswords);
+  //   passwordErrorNotifier.dispose();
+  //   super.dispose();
+  // }
 
   void togglePasswordVisibility() {
     ref.read(obscureTextProvider.notifier).state = !ref.read(obscureTextProvider);
   }
 
   void registerUser() async {
-    if (passwordController.text != confirmPasswordController.text) {
-      ref.read(errorMessageProvider.notifier).state = "Passwords do not match";
+    if (passwordErrorNotifier.value != null) {
       return;
     }
 
     ref.watch(submissionStateProvider.notifier).state = SubmissionState.submitting;
     final uri = Uri.parse('$baseUrl/api/users/register');
-    print(uri.toString());
 
     try {
       var dioInstance = Dio();
@@ -68,7 +83,7 @@ class RegisterPageState extends ConsumerState<RegisterPage> {
           "password": passwordController.text,
           "firstname": firstNameController.text,
           "lastname": lastNameController.text,
-          "erp": erpController.text  // Include ERP from user input
+          "erp": erpController.text
         }),
       );
 
@@ -82,22 +97,21 @@ class RegisterPageState extends ConsumerState<RegisterPage> {
         } else {
           ref.read(submissionStateProvider.notifier).state = SubmissionState.error;
           ref.read(errorMessageProvider.notifier).state = "Failed to register: ${response.data['msg']}";
-          print(response.data['msg']);
         }
       }
     } catch (e) {
       if (mounted) {
         ref.read(submissionStateProvider.notifier).state = SubmissionState.error;
         ref.read(errorMessageProvider.notifier).state = "Failed to connect to the server: ${e.toString()}";
-        print(e.toString());
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final obscureText = ref.watch(obscureTextProvider);
     final errorMessage = ref.watch(errorMessageProvider);
+
+    final obscureText = ref.watch(obscureTextProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Register")),
@@ -135,6 +149,18 @@ class RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
               ),
             ),
+            ValueListenableBuilder<String?>(
+              valueListenable: passwordErrorNotifier,
+              builder: (context, value, child) {
+                if (value != null) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(value, style: const TextStyle(color: Colors.red, fontSize: 14)),
+                  );
+                }
+                return SizedBox.shrink();
+              },
+            ),
             TextField(
               controller: firstNameController,
               decoration: const InputDecoration(labelText: 'First Name'),
@@ -146,10 +172,16 @@ class RegisterPageState extends ConsumerState<RegisterPage> {
             if (errorMessage.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(errorMessage, style: const TextStyle(color: Colors.red, fontSize: 14)),
+                child: Text(
+                  'Please Check Your Email and Password',
+                  style: const TextStyle(color: Colors.red, fontSize: 14),
+                ),
               ),
             ElevatedButton(
-              onPressed: registerUser,
+              onPressed: () {
+    ref.read(errorMessageProvider.notifier).state = ''; // Clear the error message
+    registerUser(); // Attempt to register the user
+    },
               child: const Text('Register'),
             ),
             TextButton(
