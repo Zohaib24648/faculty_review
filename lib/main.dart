@@ -18,7 +18,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp(
       // title: 'AcademiQ',
-      // theme: ThemeData(
+      // theme: ThemeData(`
       //   primarySwatch: Colors.brown,
       // ),
       home: FutureBuilder(
