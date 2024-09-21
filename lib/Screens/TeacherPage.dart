@@ -11,6 +11,7 @@ import '../constants.dart'; // Make sure this path is correct
 import 'package:faculty_review/Providers/TeacherProvider.dart';
 import 'package:faculty_review/Models/Teacher.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:expandable_text/expandable_text.dart';
 
 class TeacherPage extends ConsumerStatefulWidget {
   final String name;
@@ -396,8 +397,12 @@ class CommentsWidget extends StatelessWidget {
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.all(16.0),
-          title: Text(
+          title: ExpandableText(
             comment.comment,
+            expandText: 'show more',
+            collapseText: 'show less',
+            maxLines: 2,
+            linkColor: brownColor,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16.0,
@@ -441,6 +446,7 @@ class CommentsWidget extends StatelessWidget {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

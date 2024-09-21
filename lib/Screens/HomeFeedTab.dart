@@ -13,7 +13,13 @@ class HomeFeed extends ConsumerWidget {
 
     return Scaffold(
       body: postsAsyncValue.when(
-        data: (posts) => _buildPostsList(posts),
+        data: (posts) => RefreshIndicator(
+          onRefresh: () async {
+            // Refresh the posts by calling the refresh method on the provider
+            ref.refresh(postsProvider);
+          },
+          child: _buildPostsList(posts),
+        ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Text('Error: $error'),
       ),
@@ -46,23 +52,24 @@ class HomeFeed extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    post.title,
+                    post.title,maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
-
                   Text(
                     post.content,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[800],
                     ),
                   ),
                   const SizedBox(height: 8),
-
                   Text(
                     'By: ${post.createdBy}',
                     style: TextStyle(

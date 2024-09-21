@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:faculty_review/Screens/HomePage.dart';
 import 'Developers_page.dart';
-import 'RegisterPage.dart';
 import 'package:faculty_review/Providers/token_notifier.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -37,9 +36,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Logout'),
-          content: SingleChildScrollView(
+          content: const SingleChildScrollView(
             child: ListBody(
-              children: const <Widget>[
+              children: <Widget>[
                 Text('Are you sure you want to logout?'),
               ],
             ),
